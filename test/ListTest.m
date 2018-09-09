@@ -149,6 +149,115 @@ classdef ListTest < matlab.unittest.TestCase
            
         end
         
+        function test_contains(testCase)      
+            list = MXtension.Collections.List.ofElements(1, 2, 3);
+            testCase.verifyEqual(list.contains(2), true);
+            testCase.verifyEqual(list.contains(1), true);
+            testCase.verifyEqual(list.contains(3), true);
+            testCase.verifyEqual(list.contains(0), false);
+            
+            list = MXtension.Collections.List.ofElements('A', 'Bb', 'ccC');
+            testCase.verifyEqual(list.contains('A'), true);
+            testCase.verifyEqual(list.contains('Bb'), true);
+            testCase.verifyEqual(list.contains('ccC'), true);
+            testCase.verifyEqual(list.contains('a'), false);
+           
+        end
+        
+        function test_containsAll(testCase)      
+            list = MXtension.Collections.List.ofElements(1, 2, 3);
+            testCase.verifyEqual(list.containsAll({1}), true);
+            testCase.verifyEqual(list.containsAll({1,2}), true);
+            testCase.verifyEqual(list.containsAll({1,2, 3}), true);
+           testCase.verifyEqual(list.containsAll({1,2, 3, 4}), false);
+            
+            list = MXtension.Collections.List.ofElements('A', 'Bb', 'ccC');
+            testCase.verifyEqual(list.containsAll(MXtension.Collections.List.ofElements('A')), true);
+            testCase.verifyEqual(list.containsAll(MXtension.Collections.List.ofElements('A', 'Bb')), true);
+            testCase.verifyEqual(list.containsAll(MXtension.Collections.List.ofElements('A', 'Bb', 'ccC')), true);
+            testCase.verifyEqual(list.containsAll(MXtension.Collections.List.ofElements('A', 'Bb', 'ccC', '')), false);
+            
+             list = MXtension.Collections.List.ofElements('a', 'b', 'c');
+            javaCollection = java.util.ArrayList();
+            javaCollection.add('a');
+            testCase.verifyEqual(list.containsAll(javaCollection), true);
+            javaCollection.add('b');
+            testCase.verifyEqual(list.containsAll(javaCollection), true);
+            javaCollection.add('c');
+            testCase.verifyEqual(list.containsAll(javaCollection), true);
+            javaCollection.add('d');
+            testCase.verifyEqual(list.containsAll(javaCollection), false);
+        end
+        
+        function test_removeAt(testCase)      
+            list = MXtension.Collections.List.ofElements(1, 2, 3, 4);
+            % Remove in the middle
+            removed = list.removeAt(2);
+            testCase.verifyEqual(list.size(), 3);
+            testCase.verifyEqual(list.get(1), 1);
+            testCase.verifyEqual(list.get(2), 3);
+            testCase.verifyEqual(list.get(3), 4);
+            testCase.verifyEqual(removed, 2);
+            
+            % Remove on first index
+            removed = list.removeAt(1);
+            testCase.verifyEqual(list.size(), 2);
+            testCase.verifyEqual(list.get(1), 3);
+            testCase.verifyEqual(list.get(2), 4);
+            testCase.verifyEqual(removed, 1);
+            
+            % Remove on last index
+            removed = list.removeAt(2);
+            testCase.verifyEqual(list.size(), 1);
+            testCase.verifyEqual(list.get(1), 3);
+            testCase.verifyEqual(removed, 4);
+            
+            % Remove on last element in the list
+            removed = list.removeAt(1);
+            testCase.verifyEqual(list.size(), 0);
+            testCase.verifyEqual(removed, 3);
+          
+            
+            % TODO: Test Exception
+        end
+        
+        function test_remove(testCase)      
+            list = MXtension.Collections.List.ofElements(1, 2, 2, 4);
+            % Remove in the middle
+            removed = list.remove(2);
+            testCase.verifyEqual(list.size(), 3);
+            testCase.verifyEqual(list.get(1), 1);
+            testCase.verifyEqual(list.get(2), 2);
+            testCase.verifyEqual(list.get(3), 4);
+            testCase.verifyEqual(removed, true);
+            
+            % Try to remove not existing
+            removed = list.remove(6);
+            testCase.verifyEqual(list.size(), 3);
+            testCase.verifyEqual(list.get(1), 1);
+            testCase.verifyEqual(list.get(2), 2);
+            testCase.verifyEqual(list.get(3), 4);
+            testCase.verifyEqual(removed, false);
+            
+            % Remove on first index
+            removed = list.remove(1);
+            testCase.verifyEqual(list.size(), 2);
+            testCase.verifyEqual(list.get(1), 2);
+            testCase.verifyEqual(list.get(2), 4);
+            testCase.verifyEqual(removed, true);
+            
+            % Remove on last index
+            removed = list.remove(4);
+            testCase.verifyEqual(list.size(), 1);
+            testCase.verifyEqual(list.get(1), 2);
+            testCase.verifyEqual(removed, true);
+            
+            % Remove on last element in the list
+            removed = list.remove(2);
+            testCase.verifyEqual(list.size(), 0);
+            testCase.verifyEqual(removed, true);
+        end
+        
       
     end
 end
