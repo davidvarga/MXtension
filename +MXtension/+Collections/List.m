@@ -1,9 +1,11 @@
 classdef List < handle
+    % An untyped list implementation backed by a cell array.
     
     properties(Access = protected)
         CellArray;
     end
     
+    %% Factories
     methods (Static)
         function list = ofCollection(collection)
             % Returns a new List containing the elements in the input collection while keeping the original order. The input collection must be the 
@@ -93,12 +95,12 @@ classdef List < handle
             item = obj.CellArray{index};
         end
         
-        function index = indexOf(obj, elem)
+        function index = indexOf(obj, element)
             % index: double = list.indexOf(elem: Any): Returns the index of the first occurrence of the specified element in the list, or -1 if the specified element is not contained in the list.
             
             for index = 1:obj.count()
                 cElem = obj.get(index);
-                if isequal(cElem, elem)
+                if isequal(cElem, element)
                     return
                 end
             end
@@ -106,12 +108,12 @@ classdef List < handle
             index = -1;
         end
         
-        function index = lastIndexOf(obj, elem)
+        function index = lastIndexOf(obj, element)
             % index: double = list.lastIndexOf(elem: Any): Returns the index of the last occurrence of the specified element in the list, or -1 if the specified element is not contained in the list.
             
             for index = obj.size():-1:1
                 cElem = obj.get(index);
-                if isequal(cElem, elem)
+                if isequal(cElem, element)
                     return
                 end
             end
@@ -125,37 +127,54 @@ classdef List < handle
             isEmpty = obj.count() == 0;
         end
         
-        function doesContain = contains(obj, elem)
-            doesContain = obj.indexOf(elem) > 0;
+        function contains = contains(obj, element)
+            % contains: logical = list.contains(elem: Any): Checks if the specified element is contained in this collection.
+            
+            contains = obj.indexOf(element) > 0;
         end
         
-        function doesContain = containsAll(obj, elements)
-            for i = 1:numel(elements)
-                if ~obj.contains(elements{i})
-                    doesContain = false;
+        function contains = containsAll(obj, collection)
+            % contains: logical = list.containsAll(collection: <Collection type valid for ofCollection factory>): Checks if all elements in the specified collection are contained in this collection.
+            
+            MXtensionList = MXtension.Collections.List.ofCollection(collection);
+            
+            % TODO: Use forEach
+            for i = 1:MXtensionList.size()
+                if ~obj.contains(MXtensionList.get(i))
+                    contains = false;
                     return
                 end
             end
-            doesContain = true;
+            contains = true;
         end
         
         function removedElement = removeAt(obj, index)
+            % removedElement: Any = list.removeAt(index: double): Removes an element at the specified index from the list and returns the removed
+            % element.
+            % TODO: throws IndexOutOfBoundsEcxeption
+            
             % TODO: Require index <= size
             removedElement = obj.get(index);
             obj.CellArray(index) = [];
         end
         
-        function found = remove(obj, element)
+        function isRemoved = remove(obj, element)
+            % isRemoved: logical = list.remove(element: Any): Removes the first occurence of the specified element if found. Returns if a matching element was removed.
+            
             index = obj.indexOfFirst(@(it) isequal(it, element));
             if index < 0
-                found = false;
+                isRemoved = false;
             else
-                found = true;
                 obj.removeAt(index);
+                isRemoved = true;
             end
         end
         
-        function found = removeAll(obj, collectionOrPredicate)
+        function isRemoved = removeAll(obj, collectionOrPredicate)
+            % isRemoved: logical = list.removeAll(collection: <Collection type valid for ofCollection factory>): Removes all occurences of all the elements in the specified collection from the list.
+            % isRemoved: logical = list.removeAll(predicate: @(element: Any) -> logical):Removes all elements from this list that match the given predicate.
+            % Returns if any elements was removed.
+            
             if isa(collectionOrPredicate, 'function_handle')
                 predicate = collectionOrPredicate;
             else
@@ -163,10 +182,10 @@ classdef List < handle
                 predicate = @(elem) MXtensionList.contains(elem);
             end
             
-            found = false;
+            isRemoved = false;
             for i = obj.size():-1:1
                 if predicate(obj.get(i))
-                    found = true;
+                    isRemoved = true;
                     obj.removeAt(i);
                 end
             end
