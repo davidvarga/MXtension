@@ -7,7 +7,7 @@ classdef List < handle
     
     %% Factories
     methods (Static)
-        function list = ofCollection(collection)
+        function list = fromCollection(collection)
             % Returns a new List containing the elements in the input collection while keeping the original order. The input collection must be the 
             % type of a cell array, an instance of MXtension.Collections.List or an instance of java.util.Collection.
             
@@ -65,18 +65,43 @@ classdef List < handle
     %% List interface
     methods
 
-        function obj = add(obj, varargin)
-            % Called with one argument - add(element: Any): Adds the specified element to the collection.
-            % Called with two arguments - add(index: double, element: Any): Inserts an element into the list at the specified index.
+        function changed = add(obj, varargin)
+            % changed: logical = add(element: Any): Adds the specified element to the collection.
+            % changed: logical = add(index: double, element: Any): Inserts an element into the list at the specified index.
+            % Return if the list was changed as the result of the operation.
+            % TODO: throws indexoutofbounds
             
+            changed = true;
             if nargin < 3
                 obj.CellArray{end+1} = varargin{1};
             else
-                error('MXtension:NotImplemented', 'List.add(index, elem) is not impleneted yet!')
+                index = varargin{1};
+                obj.CellArray = [obj.take(index-1).toCellArray(), varargin{2}, obj.takeLast(obj.size-index+1).toCellArray()];
+               
             end
         end
         
-        % TODO: addAll
+        function changed = addAll(obj, varargin)
+            % wasAdded: logical = addAll(collection: <Collection type valid for fromCollection factory>): Adds all of the elements in the specified collection elements into the end of this list.
+            % wasAdded: logical = addAll(index: double, collection: <Collection type valid for fromCollection factory>): Inserts all of the elements in the specified collection elements into this list at the specified index.
+            % Return if the list was changed as the result of the operation.
+            % TODO: throws indexoutofbounds
+            
+            if nargin < 3
+                listToAdd = MXtension.Collections.List.fromCollection(varargin{1});
+                index = obj.size()+1;
+            else
+                listToAdd = MXtension.Collections.List.fromCollection(varargin{2});
+                index = varargin{1};
+            end
+            if listToAdd.isEmpty()
+                changed = false;
+                return
+            end
+            
+            obj.CellArray = [obj.take(index-1).toCellArray(), listToAdd.toCellArray(), obj.takeLast(obj.size-index+1).toCellArray()];
+            changed = true;
+        end
         
         function previous = set(obj, index, element)
             % previous: Any = list.set(index: double, element: Any): Replaces the element at the specified index in this list with the specified
@@ -87,8 +112,7 @@ classdef List < handle
             previous = obj.get(index);
             obj.CellArray{index} = element;
         end
-        
-        
+           
         function item = get(obj, index)
             % element: Any = list.get(index: double): Returns the element at the specified index in the list.
             
@@ -134,9 +158,9 @@ classdef List < handle
         end
         
         function contains = containsAll(obj, collection)
-            % contains: logical = list.containsAll(collection: <Collection type valid for ofCollection factory>): Checks if all elements in the specified collection are contained in this collection.
+            % contains: logical = list.containsAll(collection: <Collection type valid for fromCollection factory>): Checks if all elements in the specified collection are contained in this collection.
             
-            MXtensionList = MXtension.Collections.List.ofCollection(collection);
+            MXtensionList = MXtension.Collections.List.fromCollection(collection);
             
             % TODO: Use forEach
             for i = 1:MXtensionList.size()
@@ -171,8 +195,8 @@ classdef List < handle
         end
         
         function isRemoved = removeAll(obj, collectionOrPredicate)
-            % isRemoved: logical = list.removeAll(collection: <Collection type valid for ofCollection factory>): Removes all occurences of all the elements in the specified collection from the list.
-            % isRemoved: logical = list.removeAll(predicate: @(element: Any) -> logical):Removes all elements from this list that match the given predicate.
+            % isRemoved: logical = list.removeAll(collection: <Collection type valid for fromCollection factory>): Removes all occurences of all the elements in the specified collection from the list.
+            % isRemoved: logical = list.removeAll(predicate: @(element: Any) -> logical): Removes all elements from this list that match the given predicate.
             % Returns if any elements was removed.
             
             if isa(collectionOrPredicate, 'function_handle')
@@ -191,14 +215,18 @@ classdef List < handle
             end
         end
         
-        function found = retainAll(obj, collectionOrPredicate)
+        function modified = retainAll(obj, collectionOrPredicate)
+            % found: logical = list.retainAll(collection: <Collection type valid for fromCollection factory>): Retains only the elements in this collection that are contained in the specified collection.
+            % found: logical = list.retainAll(predicate: @(element: Any) -> logical): Retains only elements of this list that match the given predicate.
+            % Returns if the list was modified.
+            
             if isa(collectionOrPredicate, 'function_handle')
                 predicate = @(elem) ~collectionOrPredicate(elem);
             else
                 MXtensionList = MXtension.listOf(collectionOrPredicate);
                 predicate = @(elem) ~MXtensionList.contains(elem);
             end
-            found = obj.removeAll(@(elem) predicate(elem));
+            modified = obj.removeAll(@(elem) predicate(elem));
         end
         
         % TODO: removeRange
@@ -349,33 +377,31 @@ classdef List < handle
         function list = take(obj, n)
             % TODO: Require n >= 0
             if n == 0
-                list = MXtension.Collections.emptyCollection();
+                list = MXtension.Collections.List.ofElements();
                 return
             end
             
             count = obj.count();
             
             if n >= count
-                list = MXtension.Collections.List(obj.CellArray);
+                list = MXtension.Collections.List.fromCollection(obj.CellArray);
                 return
             end
             
             if n == 1
-                list = MXtension.Collections.List({obj.get(1)});
+                list = MXtension.Collections.List.fromCollection({obj.get(1)});
                 return
             end
             
             outSize = min(n, numel(obj.CellArray));
             if outSize == 0
-                list = MXtension.Collections.emptyCollection();
+                list = MXtension.Collections.emptyList();
                 return;
             else
-                result = cell(1, outSize);
+                list = MXtension.Collections.List.ofSize(outSize);
                 for i = 1:outSize
-                    result{i} = obj.CellArray{i};
+                    list.set(i, obj.get(i));
                 end
-                
-                list = MXtension.Collections.List(result);
             end
         end
         
@@ -386,33 +412,32 @@ classdef List < handle
         function list = takeLast(obj, n)
             % TODO: Require n >= 0
             if n == 0
-                list = MXtension.Collections.emptyCollection();
+                list = MXtension.Collections.List.ofElements();
                 return
             end
             
             count = obj.count();
             
             if n >= count
-                list = MXtension.Collections.List(obj.CellArray);
+                list = MXtension.Collections.List.fromCollection(obj.CellArray);
                 return
             end
             
             if n == 1
-                list = MXtension.Collections.List({obj.get(count)});
+                list = MXtension.Collections.List.fromCollection({obj.get(count)});
                 return
             end
             
-            result = cell(1, n);
+            outSize = min(n, count);
+         
+            list = MXtension.Collections.List.ofSize(outSize);
             
             index = 1;
-            for i = count - n + 1:count
-                result{index} = obj.get(i);
+            for i = count - outSize + 1:count
+                list.set(index, obj.get(i));
                 index = index + 1;
                 
             end
-            
-            list = MXtension.Collections.List(result);
-            
         end
         
         function list = takeLastWhile(obj, predicate)
