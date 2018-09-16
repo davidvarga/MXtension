@@ -13,7 +13,7 @@ classdef Map < handle
             else
                 % TODO: now only entry
                 obj.InnerMap = containers.Map();
-                for i= 1:inputMap.count()
+                for i = 1:inputMap.count()
                     entry = inputMap.get(i);
                     obj.InnerMap(entry.Key) = entry.Value;
                 end
@@ -50,27 +50,27 @@ classdef Map < handle
         end
         
         function boolean = containsKey(obj, key)
-           boolean = obj.InnerMap.isKey(key); 
+            boolean = obj.InnerMap.isKey(key);
         end
         
         function list = values(obj)
             list = MXtension.listOf(obj.InnerMap.values);
         end
         
-         function boolean = containsValue(obj, value)
-           boolean = obj.values.any(@(elem) isequal(elem, value));
+        function boolean = containsValue(obj, value)
+            boolean = obj.values.any(@(elem) isequal(elem, value));
         end
         
         function obj = clear(obj)
-           obj.InnerMap = containers.Map(); 
+            obj.InnerMap = containers.Map();
         end
         
         function obj = put(obj, key, value)
-           obj.InnerMap(key) = value; 
+            obj.InnerMap(key) = value;
         end
         
         function obj = set(obj, key, value)
-           obj.put(key, value);
+            obj.put(key, value);
         end
         
         function obj = putAll(obj, map)
@@ -83,7 +83,7 @@ classdef Map < handle
                 for i = 1:entries.size()
                     cEntry = entries.get(i);
                     obj.put(cEntry.Key, cEntry.Value);
-               
+                    
                 end
                 
             else
@@ -96,53 +96,53 @@ classdef Map < handle
         end
         
         function [value, present] = getOrDefault(obj, key, defaultValue)
-           present = false;
-           value = defaultValue;
+            present = false;
+            value = defaultValue;
             if obj.containsKey(key)
-               present = true;
-               value = obj.InnerMap(key);
-           end
+                present = true;
+                value = obj.InnerMap(key);
+            end
         end
         
         function value = getOrPut(obj, key, defaultValue)
-          [currentValue, present] = obj.get(key);
-           
+            [currentValue, present] = obj.get(key);
+            
             if ~present
-              obj.put(key, defaultValue);
-               value = defaultValue;
+                obj.put(key, defaultValue);
+                value = defaultValue;
             else
                 value = currentValue;
-           end
+            end
         end
         
         function [value, present] = remove(obj, varargin)
             
-           [value, present] = obj.get(key);
-           if present
-              obj.InnerMap.remove(key); 
-           end
+            [value, present] = obj.get(key);
+            if present
+                obj.InnerMap.remove(key);
+            end
         end
         
         function boolean = removeEntry(obj, varargin)
-           if nargin == 2
-              % MXtension.Collections.Entry 
-              % TODO: implement
-           elseif nargin == 3
-               % key + value
-               key = varargin{1};
-               value = varargin{2};
-               
-               boolean = false;
-               [currentValue, present] = obj.get(key);
-               if present
-                  if isequal(currentValue, value)
-                      boolean = true;
-                     obj.InnerMap.remove(key); 
-                  end
-               end
-           else
-               % TODO: Error!
-           end
+            if nargin == 2
+                % MXtension.Collections.Entry
+                % TODO: implement
+            elseif nargin == 3
+                % key + value
+                key = varargin{1};
+                value = varargin{2};
+                
+                boolean = false;
+                [currentValue, present] = obj.get(key);
+                if present
+                    if isequal(currentValue, value)
+                        boolean = true;
+                        obj.InnerMap.remove(key);
+                    end
+                end
+            else
+                % TODO: Error!
+            end
             
         end
         
@@ -150,12 +150,12 @@ classdef Map < handle
             keys = obj.InnerMap.keys;
             entries = MXtension.emptyList();
             for i = 1:numel(keys)
-               entries.add(MXtension.Collections.Entry(keys{i}, obj.InnerMap(keys{i}))); 
+                entries.add(MXtension.Collections.Entry(keys{i}, obj.InnerMap(keys{i})));
             end
         end
         
         function map = filter(obj, predicate)
-   
+            
             map = MXtension.Collections.Map(obj.entries().filter(predicate));
         end
         
@@ -169,24 +169,23 @@ classdef Map < handle
         
         function retCount = count(obj, varargin)
             if nargin == 1
-               retCount = obj.size();
+                retCount = obj.size();
             else
                 retCount = obj.entries.count(varargin{:});
             end
         end
         
         function retCount = countKeys(obj, predicate)
-           
-                retCount = obj.keys.count(predicate);
+            
+            retCount = obj.keys.count(predicate);
             
         end
         
         function retCount = countValues(obj, predicate)
-           
-                retCount = obj.values.count(predicate);
+            
+            retCount = obj.values.count(predicate);
             
         end
     end
     
 end
-

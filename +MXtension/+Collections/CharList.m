@@ -1,15 +1,15 @@
 classdef CharList < MXtension.Collections.List
     
     properties
-      
+        
     end
     
     methods
         function obj = CharList(varargin)
-          obj = obj@MXtension.Collections.List(varargin{:}); 
+            obj = obj@MXtension.Collections.List(varargin{:});
             for i = 1:numel(collection)
                 if ~ischar(obj.CellArray{i})
-                   error('asdsa') 
+                    error('asdsa')
                 end
             end
             
@@ -23,9 +23,9 @@ classdef CharList < MXtension.Collections.List
         end
         
         function obj = sorted(obj)
-           obj.CellArray = sort(obj.CellArray); 
+            obj.CellArray = sort(obj.CellArray);
         end
-  
+        
     end
     
     

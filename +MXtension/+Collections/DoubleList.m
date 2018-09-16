@@ -1,15 +1,15 @@
 classdef DoubleList < MXtension.Collections.List
     
     properties
-  
+        
     end
     
     methods
         function obj = DoubleList(varargin)
-           obj = obj@MXtension.Collections.List(varargin{:}); 
+            obj = obj@MXtension.Collections.List(varargin{:});
             for i = 1:numel(obj.CellArray)
                 if ~isa(obj.CellArray{i}, 'double')
-                   error('asdsa') 
+                    error('asdsa')
                 end
             end
         end
@@ -19,7 +19,7 @@ classdef DoubleList < MXtension.Collections.List
         end
         
         function result = sum(obj)
-            result = obj.reduce(@(acc, elem) acc + elem);
+            result = obj.reduce(@(acc, elem) acc+elem);
         end
         
         function obj = sorted(obj)
@@ -32,7 +32,7 @@ classdef DoubleList < MXtension.Collections.List
             for i = 1:numel(temp)
                 temp2{end+1} = temp(i);
             end
-           obj.CellArray = temp2; 
+            obj.CellArray = temp2;
         end
         
         function cellArray = toCellArray(obj)

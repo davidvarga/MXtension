@@ -1,3 +1,3 @@
 function list = listOf(varargin)
-    list = MXtension.Collections.List.ofElements(varargin{:});
+list = MXtension.Collections.ImmutableList.ofElements(varargin{:});
 end

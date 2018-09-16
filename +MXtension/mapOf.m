@@ -4,4 +4,3 @@ function map = mapOf(varargin)
 
 map = MXtension.Collections.Map(varargin{:});
 end
-

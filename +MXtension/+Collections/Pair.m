@@ -9,10 +9,9 @@ classdef Pair < handle
     
     methods
         function obj = Pair(first, second)
-           obj.First = first;
-           obj.Second = second;
+            obj.First = first;
+            obj.Second = second;
         end
     end
     
 end
-

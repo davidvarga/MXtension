@@ -6,4 +6,3 @@ list = MXtension.Collections.DoubleList(varargin{:});
 
 
 end
-
