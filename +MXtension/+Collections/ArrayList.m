@@ -52,7 +52,7 @@ classdef ArrayList < MXtension.Collections.MutableList
                     obj.CellArray = source;
                 elseif isa(source, 'MXtension.Collections.List')
                     obj.CellArray = source.toCellArray();
-                elseif isa(source, 'MXtension.Collections.Iterable')
+                elseif isa(source, 'MXtension.Collections.Collection')
                     iterator = source.iterator();
                     obj.CellArray = {};
                     while iterator.hasNext()

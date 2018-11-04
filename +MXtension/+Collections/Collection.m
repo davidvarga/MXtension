@@ -49,7 +49,7 @@ classdef (Abstract) Collection < handle
     
     methods
         function indexingIterable = withIndex(obj)
-            indexingIterable = MXtension.Collections.Iterator.IndexingIterable(obj.iterator());
+            indexingIterable = MXtension.Collections.IndexedCollection(obj.iterator());
         end
         
         function forEach(obj, operation)

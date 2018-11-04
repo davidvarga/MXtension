@@ -1,4 +1,4 @@
-classdef IndexingIterable < MXtension.Collections.Iterable
+classdef IndexedCollection < MXtension.Collections.Collection
     
     
     properties(Access = private)
@@ -6,7 +6,7 @@ classdef IndexingIterable < MXtension.Collections.Iterable
     end
     
     methods
-        function obj = IndexingIterable(iterator)
+        function obj = IndexedCollection(iterator)
             obj.Iterator = iterator;
         end
         
