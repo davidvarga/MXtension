@@ -2,7 +2,7 @@ classdef Map < handle
     %UNTITLED3 Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties(Access = protected)
         InnerMap;
     end
     

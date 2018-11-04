@@ -1,11 +1,11 @@
-classdef IndexingIterator < MXtension.Collections.Iterator
+classdef IndexingIterator < MXtension.Collections.Iterators.Iterator
     %UNTITLED4 Summary of this class goes here
     %   Detailed explanation goes here
     
     
     properties(Access = private)
         Iterator;
-        Index = 0;
+        Index = 1;
     end
     
     
@@ -20,7 +20,7 @@ classdef IndexingIterator < MXtension.Collections.Iterator
             hasNext = obj.Iterator.hasNext();
         end
         function nextElement = next(obj)
-            nextElement = MXtension.Collections.IndexedValue(obj.Index+1, obj.Iterator.next());
+            nextElement = MXtension.Collections.Iterators.IndexedValue(obj.Index, obj.Iterator.next());
             obj.Index = obj.Index + 1;
         end
         

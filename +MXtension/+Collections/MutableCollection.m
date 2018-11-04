@@ -1,12 +1,10 @@
-classdef (Abstract) MutableCollection < MXtension.Collections.Collection & MXtension.Collections.MutableIterator
-    
+classdef (Abstract) MutableCollection < MXtension.Collections.Collection
     
     methods(Abstract)
         changed = add(obj, element);
         changed = addAll(obj, collection);
-        isRemoved = remove(obj, element)
-        clear(obj)
-        
+        isRemoved = remove(obj, element);
+        clear(obj);
     end
     
     methods

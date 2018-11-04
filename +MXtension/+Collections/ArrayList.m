@@ -1,5 +1,9 @@
-classdef ArrayList < MXtension.Collections.ImmutableList & MXtension.Collections.MutableList
+classdef ArrayList < MXtension.Collections.MutableList
     % An untyped list implementation backed by a cell array.
+    
+        properties(Access = protected)
+        CellArray;
+    end
     
     %% Factories
     methods(Static)
@@ -25,13 +29,69 @@ classdef ArrayList < MXtension.Collections.ImmutableList & MXtension.Collections
     
     methods(Access = protected)
         function obj = ArrayList(sourceType, source)
-            obj@MXtension.Collections.ImmutableList(sourceType, source)
+             if strcmp(sourceType, 'elements')
+                if isempty(source)
+                    obj.CellArray = {};
+                else
+                    obj.CellArray = source;
+                end
+            elseif strcmp(sourceType, 'size')
+                
+                if iscell(source)
+                    obj.CellArray = cell(1, source{1});
+                    initSelector = source{2};
+                    for i = 1:numel(obj.CellArray)
+                        obj.CellArray{i} = initSelector(i);
+                    end
+                else
+                    obj.CellArray = cell(1, source);
+                end
+                
+            elseif strcmp(sourceType, 'collection')
+                if iscell(source)
+                    obj.CellArray = source;
+                elseif isa(source, 'MXtension.Collections.List')
+                    obj.CellArray = source.toCellArray();
+                elseif isa(source, 'MXtension.Collections.Iterable')
+                    iterator = source.iterator();
+                    obj.CellArray = {};
+                    while iterator.hasNext()
+                        obj.CellArray{end+1} = iterator.next();
+                    end
+                    
+                elseif isa(source, 'java.util.Collection')
+                    iterator = source.iterator();
+                    obj.CellArray = cell(1, source.size());
+                    index = 1;
+                    while iterator.hasNext()
+                        obj.CellArray{index} = iterator.next();
+                        index = index + 1;
+                    end
+                else
+                    % TODO: IllegalArgument (containerType)
+                end
+            else
+                % TODO: IllegalArgument (commandType)
+            end
         end
         
     end
     
     %% List interface
     methods
+        
+           function item = get(obj, index)
+            % element: Any = list.get(index: double): Returns the element at the specified index in the list.
+            % TODO: throws IndexOutOfBoundsException
+            
+            item = obj.CellArray{index};
+        end
+        
+        
+        function size = size(obj)
+            % size: double = list.size(): Returns the number of elements in this list.
+            size = numel(obj.CellArray);
+        end
         
         function changed = add(obj, element)
             % changed: logical = add(element: Any): Adds the specified element to the collection.
@@ -120,6 +180,19 @@ classdef ArrayList < MXtension.Collections.ImmutableList & MXtension.Collections
             
             obj.CellArray = {};
         end
+        
+        function mutableIterator = iterator(obj)
+            mutableIterator = MXtension.Collections.Iterators.MutableIteratorOfList(obj);
+        end
+        
+        function mutableListIterator = listIterator(obj, varargin)
+            mutableListIterator = MXtension.Collections.Iterators.MutableListIterator(obj, varargin{:});
+        end
+        
+           function cellArray = toCellArray(obj)
+            cellArray = obj.CellArray;
+        end
+        
         
     end
     

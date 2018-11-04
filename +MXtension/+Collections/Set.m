@@ -1,4 +1,4 @@
-classdef Iterator < handle
+classdef (Abstract) Set < MXtension.Collections.Collection
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,9 +6,7 @@ classdef Iterator < handle
     end
     
     methods
-        hasNext = hasNext(obj);
-        nextElement = next(obj);
-        
     end
     
 end
+

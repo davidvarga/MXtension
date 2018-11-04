@@ -6,6 +6,7 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
         modified = insertAll(obj, index, collection)
         previous = set(obj, index, element)
         removedElement = removeAt(obj, index)
+        mutableListIterator = listIterator(obj, varargin);
         % TODO: removeRange
         
         obj = reverse(obj)
