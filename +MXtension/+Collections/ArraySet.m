@@ -23,7 +23,7 @@ classdef ArraySet < MXtension.Collections.MutableSet
         function obj = ArraySet(sourceType, source)
             
             if strcmp(sourceType, 'elements')
-                obj.BackingList = MXtension.Collections.ArrayList.ofElements(source);
+                obj.BackingList = MXtension.Collections.ArrayList.ofElements(source{:});
             elseif strcmp(sourceType, 'collection')
                 obj.BackingList = MXtension.Collections.ArrayList.fromCollection(source);
             else

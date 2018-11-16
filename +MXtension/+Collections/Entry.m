@@ -1,6 +1,6 @@
 classdef Entry < handle
     
-    properties
+    properties (SetAccess = protected)
         Key;
         Value;
     end
