@@ -28,8 +28,8 @@ classdef IteratorOfList < MXtension.Collections.Iterators.Iterator
                 obj.Index = obj.Index + 1;
                 
             catch
-                % TODO: throw NoSuchElementException
-                error('NoSuchElementException')
+              
+               throw(MException('MXtension:NoSuchElementException', 'The collection is empty.'));
             end
         end
         

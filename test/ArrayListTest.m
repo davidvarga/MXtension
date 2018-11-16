@@ -1,14 +1,23 @@
 %% Test Class Definition
-classdef ArrayListTest < matlab.unittest.TestCase
+classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
+    
+    methods
+          
+        function collection = fromCollection(obj, collection)
+            collection = MXtension.Collections.ArrayList.fromCollection(collection);
+        end
+        
+        function collection = ofElements(obj, varargin)
+            collection = MXtension.Collections.ArrayList.ofElements(varargin{:});
+        end
+    
+     
+    end
     
     %% Test Method Block
     methods (Test)
         
-        % TODO: list = MXtension.Collections.ArrayList.fromCollection();
-            
-        % TODO: list =  MXtension.Collections.ArrayList.fromCollection(1);
-            
-        % TODO: list =  MXtension.Collections.ArrayList.fromCollection(cell, cell);
+       
         
         function test_list_constructed_with_ofCollection_CellArray(testCase)      
             list = MXtension.Collections.ArrayList.fromCollection({1,2,3});
@@ -78,6 +87,9 @@ classdef ArrayListTest < matlab.unittest.TestCase
             list = MXtension.Collections.ArrayList.ofElements();
             testCase.verifyEqual(list.size(), 0);
         end
+        
+        
+        
         
         function test_add(testCase)      
             list = MXtension.Collections.ArrayList.ofElements();
@@ -173,88 +185,6 @@ classdef ArrayListTest < matlab.unittest.TestCase
         
         % TODO: test set with exception
         
-        function test_indexOf(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 2, 3);
-            testCase.verifyEqual(list.indexOf(2), 2);
-            testCase.verifyEqual(list.indexOf(1), 1);
-            testCase.verifyEqual(list.indexOf(3), 4);
-            testCase.verifyEqual(list.indexOf(0), -1);
-            testCase.verifyEqual(list.indexOf('123'), -1);
-            
-             list = MXtension.Collections.ArrayList.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
-            testCase.verifyEqual(list.indexOf('a'), 2);
-            testCase.verifyEqual(list.indexOf('A'), 1);
-            testCase.verifyEqual(list.indexOf('bb'), 3);
-            testCase.verifyEqual(list.indexOf('z'), 6);
-            testCase.verifyEqual(list.indexOf(0), -1);
-            testCase.verifyEqual(list.indexOf('123'), -1);            
-        end
-        
-        function test_lastIndexOf(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 2, 3);
-            testCase.verifyEqual(list.lastIndexOf(2), 5);
-            testCase.verifyEqual(list.lastIndexOf(1), 1);
-            testCase.verifyEqual(list.lastIndexOf(3), 6);
-            testCase.verifyEqual(list.lastIndexOf(0), -1);
-            testCase.verifyEqual(list.lastIndexOf('123'), -1);
-            
-             list = MXtension.Collections.ArrayList.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
-            testCase.verifyEqual(list.lastIndexOf('a'), 5);
-            testCase.verifyEqual(list.lastIndexOf('A'), 1);
-            testCase.verifyEqual(list.lastIndexOf('bb'), 4);
-            testCase.verifyEqual(list.lastIndexOf('z'), 6);
-            testCase.verifyEqual(list.lastIndexOf(0), -1);
-            testCase.verifyEqual(list.lastIndexOf('123'), -1);            
-        end
-        
-        function test_isEmpty(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1);
-            testCase.verifyEqual(list.isEmpty(), false);
-            
-            list = MXtension.Collections.ArrayList.ofElements();
-            testCase.verifyEqual(list.isEmpty(), true);
-           
-        end
-        
-        function test_contains(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 3);
-            testCase.verifyEqual(list.contains(2), true);
-            testCase.verifyEqual(list.contains(1), true);
-            testCase.verifyEqual(list.contains(3), true);
-            testCase.verifyEqual(list.contains(0), false);
-            
-            list = MXtension.Collections.ArrayList.ofElements('A', 'Bb', 'ccC');
-            testCase.verifyEqual(list.contains('A'), true);
-            testCase.verifyEqual(list.contains('Bb'), true);
-            testCase.verifyEqual(list.contains('ccC'), true);
-            testCase.verifyEqual(list.contains('a'), false);
-           
-        end
-        
-        function test_containsAll(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 3);
-            testCase.verifyEqual(list.containsAll({1}), true);
-            testCase.verifyEqual(list.containsAll({1,2}), true);
-            testCase.verifyEqual(list.containsAll({1,2, 3}), true);
-           testCase.verifyEqual(list.containsAll({1,2, 3, 4}), false);
-            
-            list = MXtension.Collections.ArrayList.ofElements('A', 'Bb', 'ccC');
-            testCase.verifyEqual(list.containsAll(MXtension.Collections.ArrayList.ofElements('A')), true);
-            testCase.verifyEqual(list.containsAll(MXtension.Collections.ArrayList.ofElements('A', 'Bb')), true);
-            testCase.verifyEqual(list.containsAll(MXtension.Collections.ArrayList.ofElements('A', 'Bb', 'ccC')), true);
-            testCase.verifyEqual(list.containsAll(MXtension.Collections.ArrayList.ofElements('A', 'Bb', 'ccC', '')), false);
-            
-             list = MXtension.Collections.ArrayList.ofElements('a', 'b', 'c');
-            javaCollection = java.util.ArrayList();
-            javaCollection.add('a');
-            testCase.verifyEqual(list.containsAll(javaCollection), true);
-            javaCollection.add('b');
-            testCase.verifyEqual(list.containsAll(javaCollection), true);
-            javaCollection.add('c');
-            testCase.verifyEqual(list.containsAll(javaCollection), true);
-            javaCollection.add('d');
-            testCase.verifyEqual(list.containsAll(javaCollection), false);
-        end
         
         function test_removeAt(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 3, 4);
@@ -417,16 +347,7 @@ classdef ArrayListTest < matlab.unittest.TestCase
             testCase.verifyEqual(list.size(), 0);
             
         end
-        
-        function test_size(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
-     
-            testCase.verifyEqual(list.size(), 5);
-            list = MXtension.Collections.ArrayList.fromCollection({});
-            testCase.verifyEqual(list.size(), 0);
-            
-        end
-        
+      
         
         %% 
         

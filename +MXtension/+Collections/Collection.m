@@ -32,9 +32,8 @@ classdef (Abstract) Collection < handle
     end
     
     methods(Static, Abstract)
-        list = fromCollection(collection)
-        list = ofElements(varargin)
-        
+        collection = fromCollection(collection)
+        collection = ofElements(varargin)
     end
     
     methods(Access = protected)
@@ -52,44 +51,51 @@ classdef (Abstract) Collection < handle
             indexingIterable = MXtension.Collections.IndexedCollection(obj.iterator());
         end
         
-        function forEach(obj, operation)
+        function forEach(obj, action)
+            % forEach(action: (Any) -> Unit): Performs the given action on each element.
+            %
+            %   Parameters:
+            %       action: Function that takes the element itself and performs the desired action on the element.
+            
             iterator = obj.iterator();
             while iterator.hasNext()
-                operation(iterator.next());
+                action(iterator.next());
             end
         end
         
-        function forEachIndexed(obj, operation)
+        function forEachIndexed(obj, action)
+            % forEachIndexed(action: (int, Any) -> Unit): Performs the given action on each element, providing sequential index with the element.
+            %
+            %   Parameters:
+            %       action: Function that takes the index of an element and the element itself and performs the desired action on the element.
+            
             index = 1;
             iterator = obj.iterator();
             while iterator.hasNext()
-                operation(iterator.next(), index);
+                action(index, iterator.next());
                 index = index + 1;
             end
         end
         
         function contains = contains(obj, element)
-            % contains: logical = collection.contains(elem: Any): Checks if the specified element is contained in this collection.
+            % contains: logical = contains(elem: Any): Checks if the specified element is contained in this collection.
             
             contains = true;
             iterator = obj.iterator();
             while iterator.hasNext()
                 if isequal(iterator.next(), element)
-                    
                     return
                 end
             end
             contains = false;
-            
-            
         end
         
         function contains = containsAll(obj, collection)
-            % contains: logical = list.containsAll(collection: <Collection type valid for fromCollection factory>): Checks if all elements in the specified collection are contained in this collection.
+            % contains: logical = list.containsAll(collection: <See input argument of fromCollection factory>): Checks if all elements in the
+            % specified collection are contained in this collection.
             
             MXtensionCollection = obj.fromCollection(collection);
             iterator = MXtensionCollection.iterator();
-            % TODO: Use forEach
             while iterator.hasNext()
                 if ~obj.contains(iterator.next())
                     contains = false;
@@ -99,38 +105,8 @@ classdef (Abstract) Collection < handle
             contains = true;
         end
         
-        function elem = elementAt(obj, index)
-            iterator = obj.iterator();
-            count = 1;
-            while (iterator.hasNext())
-                next = iterator.next();
-                if count == index
-                    elem = next;
-                    return
-                end
-                count = count + 1;
-            end
-            
-            error('TODO: IndexOutOfBounds')
-        end
-        
-        function elem = elementAtOrElse(obj, index, defaultValue)
-            
-            
-            try
-                elem = obj.elementAt(index);
-            catch
-                elem = obj.handleDefaultValue(defaultValue, index);
-            end
-            
-            
-        end
-        
-        function elem = elementAtOrNull(obj, index)
-            elem = obj.elementAtOrElse(index, []);
-        end
-        
         function size = size(obj)
+            % size: double = size() : Returns the size of the collection.
             
             size = 0;
             iterator = obj.iterator();
@@ -140,37 +116,20 @@ classdef (Abstract) Collection < handle
             end
         end
         
-        function isEmpty = isEmpty(obj)
-            % isEmpty: logical = list.isEmpty(): Returns true if this list collection no elements, false otherwise.
-            
-            isEmpty = obj.size() == 0;
-        end
-        
-        function isNotEmpty = isNotEmpty(obj)
-            isNotEmpty = ~obj.isEmpty();
-        end
-        
-        
         function count = count(obj, varargin)
+            % count: double = count() : Returns the number of elements in this collection.
+            %
+            % count: double = count(predicate: (Any) -> logical) : Returns the number of elements matching the given predicate.
+            %   Parameters:
+            %       predicate: Function to match the given element.
+            
             if nargin == 1
                 count = obj.size();
-                %                 if isa(obj, 'MXtension.Collections.Collection')
-                %                     count = obj.size();
-                %                 else
-                %                     count = 0;
-                %                     iterator = obj.iterator();
-                %                     while iterator.hasNext()
-                %                         iterator.next();
-                %                         count = count + 1;
-                %                     end
-                % %                 end
-                
             else
                 predicate = varargin{1};
                 count = 0;
                 iterator = obj.iterator();
                 while iterator.hasNext()
-                    
                     if predicate(iterator.next())
                         count = count + 1;
                     end
@@ -178,90 +137,114 @@ classdef (Abstract) Collection < handle
             end
         end
         
-        function list = filter(obj, predicate)
-            result = cell(1, obj.count());
-            index = 0;
+        function any = any(obj, varargin)
+            % any: logical = any() : Returns true if collection has at least one element.
+            %
+            % any: logical = any(predicate: (Any) -> logical) : Returns true if at least one element matches the given predicate.
+            %   Parameters:
+            %       predicate: Function to match the given element.
             
-            function addIf(elem)
-                if predicate(elem)
-                    index = index + 1;
-                    result{index} = elem;
+            if nargin == 1
+                any = obj.isNotEmpty();
+                return;
+            end
+            any = false;
+            iterator = obj.iterator();
+            predicate = varargin{1};
+            while iterator.hasNext()
+                if predicate(iterator.next())
+                    any = true;
+                    return
                 end
             end
+        end
+        
+        function all = all(obj, predicate)
+            % all: logical = all(predicate: (Any) -> logical) : Returns true if all elements match the given predicate.
+            %   Parameters:
+            %       predicate: Function to match the given element.
             
-            obj.forEach(@(it) addIf(it));
-            
-            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
-        end
-        
-        function list = filterNot(obj, predicate)
-            list = obj.filter(@(elem) ~predicate(elem));
-        end
-        
-        function list = filterNotNull(obj)
-            list = obj.filter(@(elem) ~(isnumeric(elem) && isequal(elem, [])));
-        end
-        
-        function list = filterNotEmpty(obj)
-            list = obj.filter(@(elem) ~isempty(elem));
-        end
-        
-        function list = filterIsTypeOf(obj, type)
-            list = obj.filter(@(elem) isa(elem, type));
-        end
-        
-        function list = filterIndexed(obj, predicate)
-            result = cell(1, obj.count());
-            index = 0;
-            
-            function addIf(elem, ind)
-                if predicate(elem, ind)
-                    index = index + 1;
-                    result{index} = elem;
+            all = true;
+            iterator = obj.iterator();
+            while iterator.hasNext()
+                if ~predicate(iterator.next())
+                    all = false;
+                    return
                 end
             end
-            
-            obj.forEachIndexed(@(it, ind) addIf(it, ind));
-            
-            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
         end
         
-        function elem = find(obj, predicate)
-            elem = obj.firstOrNull(predicate);
+        function none = none(obj, varargin)
+            % none: logical = none() : Returns true if collection has no elements.
+            %
+            % none: logical = none(predicate: (Any) -> logical) : Returns true if no element matches the given predicate.
+            %   Parameters:
+            %       predicate: Function to match the given element.
             
+            if nargin == 1
+                none = obj.isEmpty();
+                return
+            end
+            predicate = varargin{1};
+            none = obj.all(@(elem) ~predicate(elem));
         end
         
-        function elem = findLast(obj, predicate)
-            elem = obj.lastOrNull(predicate);
+        function isEmpty = isEmpty(obj)
+            % isEmpty: logical = isEmpty(): Returns true if this collection has no elements, false otherwise.
             
+            isEmpty = obj.size() == 0;
         end
+        
+        function isNotEmpty = isNotEmpty(obj)
+            % isNotEmpty: logical = isNotEmpty(): Returns true if this collection has at least one element, false otherwise.
+            
+            isNotEmpty = ~obj.isEmpty();
+        end
+        
         
         function elem = first(obj, varargin)
+            % elem: Any = first() : Returns first element.
+            %
+            % Throws:
+            %   MXtension:NoSuchElementException - if the collection is empty.
+            %
+            % elem: Any = first(predicate: (Any) -> logical) : Returns the first element matching the given predicate.
+            %
+            % Throws:
+            %   MXtension:NoSuchElementException - if no such element is found.
+            
             if nargin > 1
                 predicate = varargin{1};
             else
                 predicate = [];
             end
             
+            iterator = obj.iterator();
+            if ~iterator.hasNext()
+                throw(MException('MXtension:NoSuchElementException', 'The collection is empty.'))
+            end
             
             if isempty(predicate)
-                
-                elem = obj.iterator().next();
-                
+                elem = iterator.next();
                 return;
             else
-                iterator = obj.iterator();
+                
                 while iterator.hasNext()
-                    if predicate(iterator.next())
+                    elem = iterator.next();
+                    if predicate(elem)
                         return
                     end
                 end
             end
             
-            error('TODO: No such element')
+            throw(MException('MXtension:NoSuchElementException', 'No element matches the given predicate.'))
         end
         
         function elem = firstOrNull(obj, varargin)
+            % elem: Any = firstOrNull() : Returns the first element, or null ([]) if the list is empty.
+            %
+            % elem: Any = firstOrNull(predicate: (Any) -> logical) : Returns the first element matching the given predicate, or null ([]) if element was not found.
+            
             try
                 elem = obj.first(varargin{:});
             catch
@@ -270,30 +253,33 @@ classdef (Abstract) Collection < handle
         end
         
         function elem = last(obj, varargin)
+            % elem: Any = last() : Returns the last element.
+            %
+            % Throws:
+            %   MXtension:NoSuchElementException - if the collection is empty.
+            %
+            % elem: Any = last(predicate: (Any) -> logical) : Returns the last element matching the given predicate.
+            %
+            % Throws:
+            %   MXtension:NoSuchElementException - if no such element is found.
+            
             if nargin > 1
                 predicate = varargin{1};
             else
                 predicate = [];
             end
-            
+            iterator = obj.iterator();
+            if ~iterator.hasNext()
+                throw(MException('MXtension:NoSuchElementException', 'The collection is empty.'))
+            end
             
             if isempty(predicate)
-                iterator = obj.iterator();
-                if ~iterator.hasNext()
-                    error('NoSuchElement: Empty Collection')
-                end
+                
                 elem = iterator.next();
                 while iterator.hasNext()
-                    
                     elem = iterator.next();
-                    
-                    
                 end
             else
-                iterator = obj.iterator();
-                if ~iterator.hasNext()
-                    error('NoSuchElement: Empty Collection')
-                end
                 elem = [];
                 found = false;
                 while iterator.hasNext()
@@ -301,26 +287,35 @@ classdef (Abstract) Collection < handle
                     if predicate(temp)
                         found = true;
                         elem = temp;
-                        
                     end
                 end
                 
                 if ~found
-                    error('NoSuchElement: No matching element')
+                    throw(MException('MXtension:NoSuchElementException', 'No element matches the given predicate.'))
                 end
-                
-                
             end
-            
-            
         end
         
         function elem = lastOrNull(obj, varargin)
+            % elem: Any = lastOrNull() : Returns the last element, or null ([]) if the list is empty.
+            %
+            % elem: Any = lastOrNull(predicate: (Any) -> logical) : Returns the last element matching the given predicate, or null ([]) if element was not found.
             try
                 elem = obj.last(varargin{:});
             catch
                 elem = [];
             end
+            
+        end
+        
+        
+        function elem = find(obj, predicate)
+            elem = obj.firstOrNull(predicate);
+            
+        end
+        
+        function elem = findLast(obj, predicate)
+            elem = obj.lastOrNull(predicate);
             
         end
         
@@ -385,6 +380,84 @@ classdef (Abstract) Collection < handle
             end
             
         end
+        
+        
+        function elem = elementAt(obj, index)
+            iterator = obj.iterator();
+            count = 1;
+            while (iterator.hasNext())
+                next = iterator.next();
+                if count == index
+                    elem = next;
+                    return
+                end
+                count = count + 1;
+            end
+            
+            error('TODO: IndexOutOfBounds')
+        end
+        
+        function elem = elementAtOrElse(obj, index, defaultValue)
+            try
+                elem = obj.elementAt(index);
+            catch
+                elem = obj.handleDefaultValue(defaultValue, index);
+            end
+        end
+        
+        function elem = elementAtOrNull(obj, index)
+            elem = obj.elementAtOrElse(index, []);
+        end
+        
+        
+        function list = filter(obj, predicate)
+            result = cell(1, obj.count());
+            index = 0;
+            
+            function addIf(elem)
+                if predicate(elem)
+                    index = index + 1;
+                    result{index} = elem;
+                end
+            end
+            
+            obj.forEach(@(it) addIf(it));
+            
+            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
+        end
+        
+        function list = filterNot(obj, predicate)
+            list = obj.filter(@(elem) ~predicate(elem));
+        end
+        
+        function list = filterNotNull(obj)
+            list = obj.filter(@(elem) ~(isnumeric(elem) && isequal(elem, [])));
+        end
+        
+        function list = filterNotEmpty(obj)
+            list = obj.filter(@(elem) ~isempty(elem));
+        end
+        
+        function list = filterIsTypeOf(obj, type)
+            list = obj.filter(@(elem) isa(elem, type));
+        end
+        
+        function list = filterIndexed(obj, predicate)
+            result = cell(1, obj.count());
+            index = 0;
+            
+            function addIf(elem, ind)
+                if predicate(elem, ind)
+                    index = index + 1;
+                    result{index} = elem;
+                end
+            end
+            
+            obj.forEachIndexed(@(it, ind) addIf(it, ind));
+            
+            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
+        end
+        
         %%%%%% TODO %%%%%%%%%%
         function list = take(obj, n)
             % TODO: Require n >= 0
@@ -494,32 +567,6 @@ classdef (Abstract) Collection < handle
             list = MXtension.Collections.ImmutableList.fromCollection(result);
         end
         
-        
-        function boolean = any(obj, predicate)
-            boolean = false;
-            iterator = obj.iterator();
-            while iterator.hasNext()
-                if predicate(iterator.next())
-                    boolean = true;
-                    return
-                end
-            end
-        end
-        
-        function boolean = all(obj, predicate)
-            boolean = true;
-            iterator = obj.iterator();
-            while iterator.hasNext()
-                if ~predicate(iterator.next())
-                    boolean = false;
-                    return
-                end
-            end
-        end
-        
-        function boolean = none(obj, predicate)
-            boolean = obj.all(@(elem) ~predicate(elem));
-        end
         
         function acc = fold(obj, initialValue, operation)
             
