@@ -103,19 +103,19 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         
         function test_size(testCase)
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).size(), 5);
-            testCase.assertEqual(testCase.fromCollection({}).size(), 0);
+            testCase.assertEqual(testCase.ofElements().size(), 0);
         end
         
         function test_count_without_parameter(testCase)
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).count(), 5);
-            testCase.assertEqual(testCase.fromCollection({}).count(), 0);
+            testCase.assertEqual(testCase.ofElements().count(), 0);
         end
         
         function test_count_with_predicate(testCase)
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).count(@(x) x < 3), 2);
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).count(@(x) x > 2 && x < 4), 1);
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).count(@(x) x < 1), 0);
-            testCase.assertEqual(testCase.fromCollection().count(@(x) true), 0);
+            testCase.assertEqual(testCase.ofElements().count(@(x) true), 0);
         end
         
         function test_any(testCase)
@@ -133,7 +133,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertFalse(testCase.ofElements(1, 2, 3, 4, 5).all(@(x) x > 2 && x < 4));
             testCase.assertFalse(testCase.ofElements(1, 2, 3, 4, 5).all(@(x) x < 1));
             testCase.assertTrue(testCase.ofElements(1, 2, 3, 4, 5).all(@(x) x >= 1 && x <= 5));
-            testCase.assertTrue(testCase.fromCollection().all(@(x) false));
+            testCase.assertTrue(testCase.ofElements().all(@(x) false));
         end
         
         function test_none(testCase)
@@ -148,13 +148,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         end
         
         function test_isEmpty(testCase)
-            testCase.assertEqual(testCase.ofElements(1), false);
-            testCase.assertEqual(testCase.ofElements(), true);
+            testCase.assertEqual(testCase.ofElements(1).isEmpty(), false);
+            testCase.assertEqual(testCase.ofElements().isEmpty(), true);
         end
         
         function test_isNotEmpty(testCase)
-            testCase.assertEqual(testCase.ofElements(1), true);
-            testCase.assertEqual(testCase.ofElements(), false);
+            testCase.assertEqual(testCase.ofElements(1).isNotEmpty(), true);
+            testCase.assertEqual(testCase.ofElements().isNotEmpty(), false);
         end
         
         function test_first(testCase)
