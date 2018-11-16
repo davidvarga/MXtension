@@ -27,7 +27,7 @@ classdef (Abstract) Map < handle
         end
         
         function boolean = isEmpty(obj)
-            boolean = obj.site() == 0;
+            boolean = obj.size() == 0;
         end
         
         function boolean = isNotEmpty(obj)

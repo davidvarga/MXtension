@@ -32,19 +32,20 @@ classdef HashMap < MXtension.Collections.MutableMap
                 if isa(source, 'containers.Map')
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
-                    for i = numel(keys)
+                    for i =1: numel(keys)
                         key = keys{i};
-                        entry = MXtension.Collections.MutableEntry(key, source(key));
-                        obj.InnerMap(key) = entry;
+%                         entry = MXtension.Collections.Entry(key, source(key));
+                        obj.InnerMap(key) = source(key);
                     end
                 elseif isa(source, 'MXtension.Collections.Map')
-                    obj.InnerMap = source.InnerMap;
+                    obj = MXtension.Collections.MutableMap.fromMap(source.InnerMap);
+                  
                 elseif isa(source, 'java.util.Map')
                     obj.InnerMap = containers.Map();
                     iterator = source.keySet().iterator();
                     while iterator.hasNext()
                         key = iterator.next();
-                        obj.InnerMap(key) = MXtension.Collections.MutableEntry(key, source.get(key));
+                        obj.InnerMap(key) = source.get(key);
                     end
                 else
                     % TODO: IllegalArgument
@@ -59,7 +60,7 @@ classdef HashMap < MXtension.Collections.MutableMap
                     if isa(entryOrPair, 'MXtension.Collections.Entry')
                         obj.InnerMap(entryOrPair.Key) = entryOrPair.Value;
                     elseif isa(entryOrPair, 'MXtension.Pair')
-                        obj.InnerMap(entryOrPair.First) = MXtension.Collections.MutableEntry(entryOrPair.First, entryOrPair.Second);
+                        obj.InnerMap(entryOrPair.First) = entryOrPair.Second;
                     else
                         % TODO: IllegalArgument
                         error('IllegalArgument')
@@ -109,7 +110,7 @@ classdef HashMap < MXtension.Collections.MutableMap
             keys = obj.InnerMap.keys;
             entries = MXtension.mutableSetOf();
             for i = 1:numel(keys)
-                entries.add(obj.InnerMap(keys{i}));
+                entries.add(MXtension.Collections.Entry(keys{i}, obj.InnerMap(keys{i})));
             end
             entries = entries.toSet();
         end

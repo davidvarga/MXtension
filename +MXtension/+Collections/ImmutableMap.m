@@ -31,10 +31,10 @@ classdef ImmutableMap < MXtension.Collections.Map
                 if isa(source, 'containers.Map')
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
-                    for i = numel(keys)
+                    for i =1: numel(keys)
                         key = keys{i};
-                        entry = MXtension.Collections.Entry(key, source(key));
-                        obj.InnerMap(key) = entry;
+%                         entry = MXtension.Collections.Entry(key, source(key));
+                        obj.InnerMap(key) = source(key);
                     end
                 elseif isa(source, 'MXtension.Collections.Map')
                     obj.InnerMap = source.InnerMap;
@@ -43,7 +43,7 @@ classdef ImmutableMap < MXtension.Collections.Map
                     iterator = source.keySet().iterator();
                     while iterator.hasNext()
                         key = iterator.next();
-                        obj.InnerMap(key) = MXtension.Collections.Entry(key, source.get(key));
+                        obj.InnerMap(key) = source.get(key);
                     end
                 else
                     % TODO: IllegalArgument
@@ -58,7 +58,7 @@ classdef ImmutableMap < MXtension.Collections.Map
                     if isa(entryOrPair, 'MXtension.Collections.Entry')
                         obj.InnerMap(entryOrPair.Key) = entryOrPair.Value;
                     elseif isa(entryOrPair, 'MXtension.Pair')
-                        obj.InnerMap(entryOrPair.First) = MXtension.Collections.Entry(entryOrPair.First, entryOrPair.Second);
+                        obj.InnerMap(entryOrPair.First) = entryOrPair.Second;
                     else
                         % TODO: IllegalArgument
                         error('IllegalArgument')
@@ -108,8 +108,9 @@ classdef ImmutableMap < MXtension.Collections.Map
             keys = obj.InnerMap.keys;
             entries = MXtension.mutableSetOf();
             for i = 1:numel(keys)
-                entries.add(obj.InnerMap(keys{i}));
+                entries.add(MXtension.Collections.Entry(keys{i}, obj.InnerMap(keys{i})));
             end
+            entries = entries.toSet();
         end
         
         

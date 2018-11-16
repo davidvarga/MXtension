@@ -652,7 +652,7 @@ classdef (Abstract) Collection < handle
                 end
                 innerMap(entry.Key) = entry.Value;
             end
-            map = MXtension.Collections.Map(innerMap);
+            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
         end
         
         function map = associateWith(obj, valueSelector)
@@ -687,7 +687,7 @@ classdef (Abstract) Collection < handle
                 innerMap = containers.Map();
             end
             
-            map = MXtension.Collections.Map(innerMap);
+            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
         end
         
         function map = groupBy(obj, keySelector)
@@ -712,7 +712,7 @@ classdef (Abstract) Collection < handle
                 innerMap = containers.Map();
             end
             
-            map = MXtension.Collections.Map(innerMap);
+            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
         end
         
         function list = distinct(obj)
