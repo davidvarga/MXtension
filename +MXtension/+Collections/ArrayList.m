@@ -83,8 +83,11 @@ classdef ArrayList < MXtension.Collections.MutableList
            function item = get(obj, index)
             % element: Any = list.get(index: double): Returns the element at the specified index in the list.
             % TODO: throws IndexOutOfBoundsException
-            
-            item = obj.CellArray{index};
+            if index > 0 && index <= numel(obj.CellArray)
+                item = obj.CellArray{index};
+            else
+                throw(MException('MXtension:IndexOutOfBoundsException', ['The collection does not contain any element at index ', num2str(index)]));
+            end
         end
         
         
@@ -164,7 +167,7 @@ classdef ArrayList < MXtension.Collections.MutableList
         function isRemoved = remove(obj, element)
             % isRemoved: logical = list.remove(element: Any): Removes the first occurence of the specified element if found. Returns if a matching element was removed.
             
-            index = obj.indexOfFirst(@(it) isequal(it, element));
+            index = obj.indexOfFirst(@(it) MXtension.equals(it, element));
             if index < 0
                 isRemoved = false;
             else

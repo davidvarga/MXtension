@@ -20,7 +20,7 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
         function obj = fill(obj, value)
             % list.fill(value: Any) :Each element in the list gets replaced with the specified value.
             
-            obj.forEachIndexed(@(it, ind) obj.set(ind, value));
+            obj.forEachIndexed(@(ind, it) obj.set(ind, value));
         end
         
         

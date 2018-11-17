@@ -179,7 +179,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(ex.message, 'The collection is empty.');
             end
             try
-                testCase.ofElements(1,2,3).first(@(x) x > 3);
+                testCase.ofElements(1, 2, 3).first(@(x) x > 3);
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:NoSuchElementException');
@@ -194,7 +194,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             
             testCase.assertEqual(testCase.ofElements(1, 2, 3).firstOrNull(@(x) x > 2), 3);
             testCase.assertEqual(testCase.ofElements('a', 'b').firstOrNull(@(x) strcmp(x, 'a')), 'a');
-            testCase.assertEqual(testCase.ofElements(1,2,3).firstOrNull(@(x) x > 3), []);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).firstOrNull(@(x) x > 3), []);
             testCase.assertEqual(testCase.ofElements().firstOrNull(@(x) true), []);
         end
         
@@ -221,7 +221,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(ex.message, 'The collection is empty.');
             end
             try
-                testCase.ofElements(1,2,3).last(@(x) x > 3);
+                testCase.ofElements(1, 2, 3).last(@(x) x > 3);
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:NoSuchElementException');
@@ -233,47 +233,208 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3).lastOrNull(), 3);
             testCase.assertEqual(testCase.ofElements('a', 'b').lastOrNull(), 'b');
             testCase.assertEqual(testCase.ofElements().lastOrNull(), []);
-
+            
             testCase.assertEqual(testCase.ofElements(1, 2, 3).lastOrNull(@(x) x > 2), 3);
             testCase.assertEqual(testCase.ofElements(1, 2, 3).lastOrNull(@(x) x < 2), 1);
             testCase.assertEqual(testCase.ofElements('a', 'b').lastOrNull(@(x) strcmp(x, 'a')), 'a');
-            testCase.assertEqual(testCase.ofElements(1,2,3).lastOrNull(@(x) x > 3), []);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).lastOrNull(@(x) x > 3), []);
             testCase.assertEqual(testCase.ofElements().lastOrNull(@(x) true), []);
         end
         
+        function test_find(testCase)
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).find(@(x) x > 2), 3);
+            testCase.assertEqual(testCase.ofElements('a', 'b').find(@(x) strcmp(x, 'a')), 'a');
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).find(@(x) x > 3), []);
+            testCase.assertEqual(testCase.ofElements().find(@(x) true), []);
+        end
+        
+        function test_findLast(testCase)
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).findLast(@(x) x > 2), 3);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).findLast(@(x) x < 2), 1);
+            testCase.assertEqual(testCase.ofElements('a', 'b').findLast(@(x) strcmp(x, 'a')), 'a');
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).findLast(@(x) x > 3), []);
+            testCase.assertEqual(testCase.ofElements().findLast(@(x) true), []);
+        end
+        
+        function test_indexOfFirst(testCase)
+            testCase.assertEqual(testCase.ofElements(1, 2, 3, 3).indexOfFirst(@(x) x > 2), 3);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfFirst(@(x) x > 2), 3);
+            testCase.assertEqual(testCase.ofElements('a', 'b').indexOfFirst(@(x) strcmp(x, 'a')), 1);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfFirst(@(x) x > 3), -1);
+            testCase.assertEqual(testCase.ofElements().indexOfFirst(@(x) true), -1);
+        end
+        
+        function test_indexOfLast(testCase)
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfLast(@(x) x > 2), 3);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfLast(@(x) x < 2), 1);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3, 1).indexOfLast(@(x) x < 2), 4);
+            testCase.assertEqual(testCase.ofElements('a', 'b').indexOfLast(@(x) strcmp(x, 'a')), 1);
+            testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfLast(@(x) x > 3), -1);
+            testCase.assertEqual(testCase.ofElements().indexOfLast(@(x) true), -1);
+        end
         
         function test_indexOf(testCase)
-            list = testCase.ofElements(1, 2, 2, 3, 2, 3);
-            testCase.assertEqual(list.indexOf(2), 2);
-            testCase.assertEqual(list.indexOf(1), 1);
-            testCase.assertEqual(list.indexOf(3), 4);
-            testCase.assertEqual(list.indexOf(0), -1);
-            testCase.assertEqual(list.indexOf('123'), -1);
+            collection = testCase.ofElements(1, 2, 2, 3, 2, 3);
+            testCase.assertEqual(collection.indexOf(2), 2);
+            testCase.assertEqual(collection.indexOf(1), 1);
+            testCase.assertEqual(collection.indexOf(3), 4);
+            testCase.assertEqual(collection.indexOf(0), -1);
+            testCase.assertEqual(collection.indexOf('123'), -1);
             
-            list = testCase.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
-            testCase.assertEqual(list.indexOf('a'), 2);
-            testCase.assertEqual(list.indexOf('A'), 1);
-            testCase.assertEqual(list.indexOf('bb'), 3);
-            testCase.assertEqual(list.indexOf('z'), 6);
-            testCase.assertEqual(list.indexOf(0), -1);
-            testCase.assertEqual(list.indexOf('123'), -1);
+            collection = testCase.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
+            testCase.assertEqual(collection.indexOf('a'), 2);
+            testCase.assertEqual(collection.indexOf('A'), 1);
+            testCase.assertEqual(collection.indexOf('bb'), 3);
+            testCase.assertEqual(collection.indexOf('z'), 6);
+            testCase.assertEqual(collection.indexOf(0), -1);
+            testCase.assertEqual(collection.indexOf('123'), -1);
         end
         
         function test_lastIndexOf(testCase)
-            list = testCase.ofElements(1, 2, 2, 3, 2, 3);
-            testCase.assertEqual(list.lastIndexOf(2), 5);
-            testCase.assertEqual(list.lastIndexOf(1), 1);
-            testCase.assertEqual(list.lastIndexOf(3), 6);
-            testCase.assertEqual(list.lastIndexOf(0), -1);
-            testCase.assertEqual(list.lastIndexOf('123'), -1);
+            collection = testCase.ofElements(1, 2, 2, 3, 2, 3);
+            testCase.assertEqual(collection.lastIndexOf(2), 5);
+            testCase.assertEqual(collection.lastIndexOf(1), 1);
+            testCase.assertEqual(collection.lastIndexOf(3), 6);
+            testCase.assertEqual(collection.lastIndexOf(0), -1);
+            testCase.assertEqual(collection.lastIndexOf('123'), -1);
             
-            list = testCase.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
-            testCase.assertEqual(list.lastIndexOf('a'), 5);
-            testCase.assertEqual(list.lastIndexOf('A'), 1);
-            testCase.assertEqual(list.lastIndexOf('bb'), 4);
-            testCase.assertEqual(list.lastIndexOf('z'), 6);
-            testCase.assertEqual(list.lastIndexOf(0), -1);
-            testCase.assertEqual(list.lastIndexOf('123'), -1);
+            collection = testCase.ofElements('A', 'a', 'bb', 'bb', 'a', 'z');
+            testCase.assertEqual(collection.lastIndexOf('a'), 5);
+            testCase.assertEqual(collection.lastIndexOf('A'), 1);
+            testCase.assertEqual(collection.lastIndexOf('bb'), 4);
+            testCase.assertEqual(collection.lastIndexOf('z'), 6);
+            testCase.assertEqual(collection.lastIndexOf(0), -1);
+            testCase.assertEqual(collection.lastIndexOf('123'), -1);
+        end
+        
+        function test_elementAt(testCase)
+            collection = testCase.ofElements(1, 2, 3, 4, 5);
+            for i = 1:5
+                testCase.assertEqual(collection.elementAt(i), i);
+            end
+            try
+                collection.elementAt(6);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 6');
+            end
+        end
+        
+        function test_elementAtOrElse(testCase)
+            collection = testCase.ofElements(1, 2, 3, 4, 5);
+            for i = 1:10
+                testCase.assertEqual(collection.elementAtOrElse(i, @(ind) ind), i);
+            end
+            
+            for i = 1:10
+                testCase.assertEqual(collection.elementAtOrElse(i, i), i);
+            end
+        end
+        
+        function test_elementAtOrNull(testCase)
+            collection = testCase.ofElements(1, 2, 3, 4, 5);
+            for i = 1:5
+                testCase.assertEqual(collection.elementAtOrNull(i), i);
+            end
+            
+            for i = 6:10
+                testCase.assertEqual(collection.elementAtOrNull(i), []);
+            end
+        end
+        
+        function test_filter(testCase)
+            testCase.assertEqual(testCase.ofElements().filter(@(x) true).size(), 0);
+            list = testCase.ofElements(1, 2, 3, 4, 5).filter(@(x) mod(x, 2) == 0);
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 2);
+            testCase.assertEqual(list.get(2), 4);
+            testCase.assertEqual(list.size(), 2);
+        end
+        
+        function test_filterNot(testCase)
+            testCase.assertEqual(testCase.ofElements().filterNot(@(x) true).size(), 0);
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterNot(@(x) mod(x, 2) == 0);
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 1);
+            testCase.assertEqual(list.get(2), 3);
+            testCase.assertEqual(list.get(3), 5);
+            testCase.assertEqual(list.size(), 3);
+        end
+        
+        function test_filterNotNull(testCase)
+            testCase.assertEqual(testCase.ofElements().filterNotNull().size, 0);
+            list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterNotNull();
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 0);
+            testCase.assertEqual(list.get(2), 1);
+            testCase.assertEqual(list.get(3), 3);
+            testCase.assertEqual(list.get(4), 5);
+            testCase.assertEqual(list.get(5), '');
+            testCase.assertEqual(list.size(), 5);
+        end
+        
+        function test_filterNotEmpty(testCase)
+            testCase.assertEqual(testCase.ofElements().filterNotEmpty().size, 0);
+            list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterNotEmpty();
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 0);
+            testCase.assertEqual(list.get(2), 1);
+            testCase.assertEqual(list.get(3), 3);
+            testCase.assertEqual(list.get(4), 5);
+            testCase.assertEqual(list.size(), 4);
+        end
+        
+        function test_filterIsTypeOf(testCase)
+            testCase.assertEqual(testCase.ofElements().filterIsTypeOf('char').size, 0);
+            list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterIsTypeOf('char');
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), '');
+            testCase.assertEqual(list.size(), 1);
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterIsTypeOf('double');
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            for i = 1:5
+                testCase.assertEqual(list.get(i), i);
+            end
+            testCase.assertEqual(list.size(), 5);
+        end
+        
+        function test_filterIndexed(testCase)
+            testCase.assertEqual(testCase.ofElements().filterIndexed(@(ind, x) true).size(), 0);
+            list = testCase.ofElements('a', 'b', 'c', 'd', 'e').filterIndexed(@(ind, x) mod(ind, 2) == 0);
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 'b');
+            testCase.assertEqual(list.get(2), 'd');
+            testCase.assertEqual(list.size(), 2);
+        end
+        
+        function test_take(testCase)
+            testCase.assertEqual(testCase.ofElements().take(5).size(), 0);
+            testCase.assertEqual(testCase.ofElements(1).take(0).size(), 0);
+            testCase.assertEqual(testCase.ofElements().take(0).size(), 0);
+            % TODO: error if take(-1)
+            
+            list = testCase.ofElements('a', 'b', 'c', 'd', 'e').take(2);
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            testCase.assertEqual(list.get(1), 'a');
+            testCase.assertEqual(list.get(2), 'b');
+            testCase.assertEqual(list.size(), 2);
+            
+            list = testCase.ofElements(1,2,3,4,5).take(6);
+            testCase.assertTrue(isa(list, 'MXtension.Collections.List'));
+            testCase.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+            for i = 1:5
+                testCase.assertEqual(list.get(i), i);
+            end
+            testCase.assertEqual(list.size(), 5);
         end
         
         

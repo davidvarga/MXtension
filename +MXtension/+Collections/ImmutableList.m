@@ -91,7 +91,11 @@ classdef ImmutableList < MXtension.Collections.List
             % element: Any = list.get(index: double): Returns the element at the specified index in the list.
             % TODO: throws IndexOutOfBoundsException
             
-            item = obj.CellArray{index};
+            if index > 0 && index <= numel(obj.CellArray)
+                item = obj.CellArray{index};
+            else
+                throw(MException('MXtension:IndexOutOfBoundsException', ['The collection does not contain any element at index ', num2str(index)]));
+            end
         end
         
         

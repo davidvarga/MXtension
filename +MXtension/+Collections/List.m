@@ -51,7 +51,7 @@ classdef (Abstract) List < MXtension.Collections.Collection
             
             for index = obj.size():-1:1
                 cElem = obj.get(index);
-                if isequal(cElem, element)
+                if MXtension.equals(cElem, element)
                     return
                 end
             end

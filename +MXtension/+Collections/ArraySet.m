@@ -81,7 +81,7 @@ classdef ArraySet < MXtension.Collections.MutableSet
         function isRemoved = remove(obj, element)
             % isRemoved: logical = list.remove(element: Any): Removes the first occurence of the specified element if found. Returns if a matching element was removed.
             
-            index = obj.BackingList.indexOfFirst(@(it) isequal(it, element));
+            index = obj.BackingList.indexOfFirst(@(it) MXtension.equals(it, element));
             if index < 0
                 isRemoved = false;
             else

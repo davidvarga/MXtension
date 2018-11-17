@@ -56,7 +56,7 @@ classdef MutableMap < MXtension.Collections.Map
             boolean = false;
             [currentValue, present] = obj.get(key);
             if present
-                if isequal(currentValue, value)
+                if MXtension.equals(currentValue, value)
                     
                     boolean = true;
                     obj.remove(key);

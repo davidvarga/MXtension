@@ -51,7 +51,7 @@ classdef (Abstract) Map < handle
         end
         
         function boolean = containsValue(obj, value)
-            boolean = obj.values.any(@(elem) isequal(elem, value));
+            boolean = obj.values.any(@(elem) MXtension.equals(elem, value));
         end
         
         function map = filter(obj, predicate)

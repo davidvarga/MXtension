@@ -355,7 +355,7 @@ classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
             list.fill('a');
             for i = 1:list.size()
-                testCase.verifyEqual(list.get(i), 'a');
+                testCase.assertEqual(list.get(i), 'a');
             end
            list = MXtension.Collections.ArrayList.fromCollection({});
             list.fill('a');

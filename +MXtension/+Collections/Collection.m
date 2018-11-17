@@ -83,7 +83,7 @@ classdef (Abstract) Collection < handle
             contains = true;
             iterator = obj.iterator();
             while iterator.hasNext()
-                if isequal(iterator.next(), element)
+                if MXtension.equals(iterator.next(), element)
                     return
                 end
             end
@@ -310,17 +310,21 @@ classdef (Abstract) Collection < handle
         
         
         function elem = find(obj, predicate)
-            elem = obj.firstOrNull(predicate);
+            % elem: Any = find(predicate: (Any) -> logical) : Returns the first element matching the given predicate, or null ([]) if element was not found.
             
+            elem = obj.firstOrNull(predicate);
         end
         
         function elem = findLast(obj, predicate)
+            % elem: Any = findLast(predicate: (Any) -> logical) : Returns the last element matching the given predicate, or null ([]) if element was not found.
+            
             elem = obj.lastOrNull(predicate);
             
         end
         
         function index = indexOfFirst(obj, predicate)
-            
+            % index: double = indexOfFirst(predicate: (Any) -> logical) : Returns index of the first element matching the given predicate, 
+            % or -1 if the list does not contain such element.
             
             iterator = obj.iterator();
             index = 1;
@@ -335,6 +339,9 @@ classdef (Abstract) Collection < handle
         end
         
         function lastIndex = indexOfLast(obj, predicate)
+            % lastIndex: double = indexOfLast(predicate: (Any) -> logical) : Returns index of the last element matching the given predicate, or -1 if 
+            % the list does not contain such element.
+            
             iterator = obj.iterator();
             lastIndex = -1;
             index = 1;
@@ -356,7 +363,7 @@ classdef (Abstract) Collection < handle
             index = 1;
             while iterator.hasNext()
                 
-                if isequal(iterator.next(), element)
+                if MXtension.equals(iterator.next(), element)
                     return
                 end
                 index = index + 1;
@@ -372,7 +379,7 @@ classdef (Abstract) Collection < handle
             lastIndex = -1;
             index = 1;
             while iterator.hasNext()
-                if isequal(iterator.next(), element)
+                if MXtension.equals(iterator.next(), element)
                     lastIndex = index;
                     
                 end
@@ -383,6 +390,9 @@ classdef (Abstract) Collection < handle
         
         
         function elem = elementAt(obj, index)
+            % elem: Any = elementAt(index: double) : Returns an element at the given index or throws an MException with the id of 
+            % MXtension:IndexOutOfBoundsException if the index is out of bounds of this collection.
+            
             iterator = obj.iterator();
             count = 1;
             while (iterator.hasNext())
@@ -393,11 +403,16 @@ classdef (Abstract) Collection < handle
                 end
                 count = count + 1;
             end
-            
-            error('TODO: IndexOutOfBounds')
+            throw(MException('MXtension:IndexOutOfBoundsException', ['The collection does not contain any element at index ', num2str(index)]));
         end
         
         function elem = elementAtOrElse(obj, index, defaultValue)
+            % elem: Any = elementAtOrElse(index: double, defaultValue: (double) -> Any) : Returns an element at the given index or the result of 
+            % calling the defaultValue function if the index is out of bounds of this collection.
+            %
+            % elem: Any = elementAtOrElse(index: double, defaultValue: Any) : Returns an element at the given index or the value defined in the 
+            % defaultValue parameter.
+            
             try
                 elem = obj.elementAt(index);
             catch
@@ -406,11 +421,16 @@ classdef (Abstract) Collection < handle
         end
         
         function elem = elementAtOrNull(obj, index)
+            % elem: Any = elementAtOrNull(index: double) : Returns an element at the given index or null ([]) if the index is out of bounds of this
+            % collection.
+            
             elem = obj.elementAtOrElse(index, []);
         end
         
         
         function list = filter(obj, predicate)
+            % list: MXtension.Collections.List = filter(predicate: (Any) -> boolean) : Returns a list containing only elements matching the given predicate.
+            
             result = cell(1, obj.count());
             index = 0;
             
@@ -423,46 +443,62 @@ classdef (Abstract) Collection < handle
             
             obj.forEach(@(it) addIf(it));
             
-            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
+            list = MXtension.listFrom(result(1:index));
         end
         
         function list = filterNot(obj, predicate)
+            % list: MXtension.Collections.List = filterNot(predicate: (Any) -> boolean) : Returns a list containing only elements not matching the given predicate.
+            
             list = obj.filter(@(elem) ~predicate(elem));
         end
         
         function list = filterNotNull(obj)
-            list = obj.filter(@(elem) ~(isnumeric(elem) && isequal(elem, [])));
+            % list: MXtension.Collections.List = filterNotNull() : Returns a list containing all elements that are not null ([]).
+            
+            list = obj.filter(@(elem) ~(MXtension.equals(elem, [])));
         end
         
         function list = filterNotEmpty(obj)
+            % list: MXtension.Collections.List = filterNotEmpty() : Returns a list containing all elements that are not empty (isempty(elem) == false).
+            
             list = obj.filter(@(elem) ~isempty(elem));
         end
         
         function list = filterIsTypeOf(obj, type)
+            % list: MXtension.Collections.List = filterIsTypeOf(type: char) : Returns a list containing all elements that are istances of the given type.
+            
             list = obj.filter(@(elem) isa(elem, type));
         end
         
         function list = filterIndexed(obj, predicate)
+            % list: MXtension.Collections.List = filterIndexed(predicate: (double, Any) -> boolean) : Returns a list containing only elements matching the given predicate.
+            %
+            % Parameters:
+            % 	predicate - function that takes the index of the element and the element and matches or not the element.
+            
             result = cell(1, obj.count());
             index = 0;
             
-            function addIf(elem, ind)
-                if predicate(elem, ind)
+            function addIf(ind, elem)
+                if predicate(ind, elem)
                     index = index + 1;
                     result{index} = elem;
                 end
             end
             
-            obj.forEachIndexed(@(it, ind) addIf(it, ind));
+            obj.forEachIndexed(@(ind, it) addIf(ind, it));
             
-            list = MXtension.Collections.ArrayList.fromCollection(result(1:index));
+            list = MXtension.listFrom(result(1:index));
         end
         
         %%%%%% TODO %%%%%%%%%%
         function list = take(obj, n)
+            % list: MXtension.Collections.List = take(n: double) : Returns a list containing first n elements if possible.
+            
             % TODO: Require n >= 0
+            
             if n == 0
-                list = MXtension.Collections.ArrayList.ofSize(0);
+                list = MXtension.emptyList();
                 return
             end
             
@@ -473,14 +509,14 @@ classdef (Abstract) Collection < handle
                 return
             end
             
-            if n == 1
-                list = MXtension.Collections.ArrayList.fromCollection({obj.first()});
+             if n == 1
+                list = MXtension.listOf(obj.first());
                 return
             end
             
             outSize = min(n, count);
             if outSize == 0
-                list = MXtension.Collections.ArrayList.ofSize(0);
+                list = MXtension.emptyList();
                 return;
             else
                 list = MXtension.Collections.ArrayList.ofSize(outSize);
@@ -494,6 +530,7 @@ classdef (Abstract) Collection < handle
                     
                     list.set(outCount, iterator.next());
                 end
+                list = list.toList();
             end
         end
         
@@ -511,13 +548,13 @@ classdef (Abstract) Collection < handle
                 index = index + 1;
             end
             
-            list = MXtension.Collections.ImmutableList.fromCollection(result);
+            list = MXtension.listFrom(result);
         end
         
         function list = drop(obj, n)
             count = obj.count();
             if n > count
-                list = MXtension.Collections.ImmutableList.fromCollection({});
+                list = MXtension.emptyList();
             else
                 iterator = obj.iterator();
                 index = 1;
@@ -535,7 +572,7 @@ classdef (Abstract) Collection < handle
                     
                 end
                 
-                list = MXtension.Collections.ImmutableList.fromCollection(result);
+                list = MXtension.listFrom(result);
             end
             
         end
@@ -564,7 +601,7 @@ classdef (Abstract) Collection < handle
                 objIndex = objIndex + 1;
                 
             end
-            list = MXtension.Collections.ImmutableList.fromCollection(result);
+            list = MXtension.listFrom(result);
         end
         
         
@@ -613,7 +650,7 @@ classdef (Abstract) Collection < handle
             
             while iterator.hasNext()
                 next = handle(iterator.next());
-                if ~isequal(next, [])
+                if ~MXtension.equals(next, [])
                     list.add(next);
                 end
                 
