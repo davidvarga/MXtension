@@ -784,7 +784,22 @@ classdef (Abstract) Collection < handle
             pairOfLists = MXtension.Pair(MXtension.listFrom(first(1:firstIndex)), MXtension.listFrom(second(1:secondIndex)));
         end
         
-        function listOfPairs = zip(obj, otherIterable, varargin)
+        function listOfPairs = zip(obj, otherCollection, varargin)
+            % listOfPairs: MXtension.Colllections.List<MXtension.Pair> = zip(obj, otherCollection: MXtension.Collections.Collection) : Returns a list 
+            % of pairs built from the elements of this collection and other collection with the same index.
+            % The returned list has length of the shortest collection and each element is an MXtension.Pair instance, where the element in the First 
+            % property is the element from the first collection and the element in the Second property is the element from the second collection.
+            %
+            % list: MXtension.Colllections.List = zip(obj, otherCollection: MXtension.Collections.Collection, transform: (Any, Any) -> Any) : 
+            % Returns a list of values built from the elements of this collection and the other collection with the same index using the provided transform function 
+            % applied to each pair of elements.
+            % The returned list has length of the shortest collection.
+            %
+            % Parameters:
+            %   otherCollection - any MXtension.Collection.Collection instance
+            %   transform - function that takes the current element from the first collection and the element on the same index from the other
+            %   collection and produces the value in the zipped collection.
+
             if nargin < 3
                 transform = @(first, second) MXtension.Pair(first, second);
             else
@@ -792,9 +807,9 @@ classdef (Abstract) Collection < handle
             end
             
             firstIterator = obj.iterator();
-            otherIterator = otherIterable.iterator();
+            otherIterator = otherCollection.iterator();
             
-            result = cell(1, min(obj.count(), otherIterable.count()));
+            result = cell(1, min(obj.count(), otherCollection.count()));
             index = 1;
             while firstIterator.hasNext() && otherIterator.hasNext()
                 result{index} = transform(firstIterator.next(), otherIterator.next());
@@ -802,7 +817,6 @@ classdef (Abstract) Collection < handle
             end
             
             listOfPairs = MXtension.Collections.ImmutableList.fromCollection(result);
-            
         end
         
         
@@ -819,7 +833,7 @@ classdef (Abstract) Collection < handle
                 end
                 innerMap(entry.Key) = entry.Value;
             end
-            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
+            map = MXtension.mapFrom(innerMap);
         end
         
         function map = associateWith(obj, valueSelector)

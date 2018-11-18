@@ -1,7 +1,7 @@
 classdef ArrayList < MXtension.Collections.MutableList
     % An untyped list implementation backed by a cell array.
     
-        properties(Access = protected)
+    properties(Access = protected)
         CellArray;
     end
     
@@ -29,7 +29,7 @@ classdef ArrayList < MXtension.Collections.MutableList
     
     methods(Access = protected)
         function obj = ArrayList(sourceType, source)
-             if strcmp(sourceType, 'elements')
+            if strcmp(sourceType, 'elements')
                 if isempty(source)
                     obj.CellArray = {};
                 else
@@ -68,10 +68,10 @@ classdef ArrayList < MXtension.Collections.MutableList
                         index = index + 1;
                     end
                 else
-                    % TODO: IllegalArgument (containerType)
+                    throw(MException('MXtension:IllegalArgumentException', 'The passed collection type is not supported.'));
                 end
             else
-                % TODO: IllegalArgument (commandType)
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
         end
         
@@ -80,7 +80,7 @@ classdef ArrayList < MXtension.Collections.MutableList
     %% List interface
     methods
         
-           function item = get(obj, index)
+        function item = get(obj, index)
             % element: Any = list.get(index: double): Returns the element at the specified index in the list.
             % TODO: throws IndexOutOfBoundsException
             if index > 0 && index <= numel(obj.CellArray)
@@ -192,7 +192,7 @@ classdef ArrayList < MXtension.Collections.MutableList
             mutableListIterator = MXtension.Collections.Iterators.MutableListIterator(obj, varargin{:});
         end
         
-           function cellArray = toCellArray(obj)
+        function cellArray = toCellArray(obj)
             cellArray = obj.CellArray;
         end
         

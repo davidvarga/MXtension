@@ -29,7 +29,7 @@ classdef ImmutableSet < MXtension.Collections.Set
             elseif strcmp(sourceType, 'collection')
                 obj.BackingList = MXtension.Collections.ArrayList.fromCollection(source);
             else
-                % TODO: IllegalArgument (commandType)
+               throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             mutableIterator = obj.BackingList.listIterator(obj.BackingList.size()+1);
             index = obj.BackingList.size();

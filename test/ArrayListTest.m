@@ -1,4 +1,4 @@
-%% Test Class Definition
+
 classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
     
     methods
@@ -14,53 +14,9 @@ classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
      
     end
     
-    %% Test Method Block
+
     methods (Test)
-        
-       
-        
-        function test_list_constructed_with_ofCollection_CellArray(testCase)      
-            list = MXtension.Collections.ArrayList.fromCollection({1,2,3});
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 3);
-            
-            list = MXtension.Collections.ArrayList.fromCollection({});
-            testCase.verifyEqual(list.size(), 0);
-        end
-        
-        function test_list_constructed_with_ofCollection_MXtensionList(testCase)      
-            inputList = MXtension.Collections.ArrayList.fromCollection({1,2,3});
-            
-            list = MXtension.Collections.ArrayList.fromCollection(inputList);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 3);
-            
-            inputList = MXtension.Collections.ArrayList.fromCollection({});
-            
-            list = MXtension.Collections.ArrayList.fromCollection(inputList);
-            testCase.verifyEqual(list.size(), 0);
-        end
-        
-        function test_list_constructed_with_ofCollection_Java_Collection(testCase)      
-            javaCollection = java.util.ArrayList();
-            javaCollection.add('a');
-            javaCollection.add('b');
-            javaCollection.add('c');
-            
-            list = MXtension.Collections.ArrayList.fromCollection(javaCollection);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 'a');
-            testCase.verifyEqual(list.get(2), 'b');
-            testCase.verifyEqual(list.get(3), 'c');
-           
-            list = MXtension.Collections.ArrayList.fromCollection(java.util.ArrayList());
-            testCase.verifyEqual(list.size(), 0);
-        end
-        
+
         function test_list_constructed_with_ofSize(testCase)      
             list = MXtension.Collections.ArrayList.ofSize(3);
             testCase.verifyEqual(list.size(), 3);
@@ -71,24 +27,6 @@ classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
             list = MXtension.Collections.ArrayList.ofSize(0);
             testCase.verifyEqual(list.size(), 0);
         end
-        
-        function test_list_constructed_with_ofElements(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements('a', 1, 'b');
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 'a');
-            testCase.verifyEqual(list.get(2), 1);
-            testCase.verifyEqual(list.get(3), 'b');
-            
-            list = MXtension.Collections.ArrayList.ofElements({1,2,3}, {4,5,6});
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(1), {1,2,3});
-            testCase.verifyEqual(list.get(2), {4,5,6});
-            
-            list = MXtension.Collections.ArrayList.ofElements();
-            testCase.verifyEqual(list.size(), 0);
-        end
-        
-        
         
         
         function test_add(testCase)      

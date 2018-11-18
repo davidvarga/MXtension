@@ -11,8 +11,7 @@ classdef MutableIteratorOfList < MXtension.Collections.Iterators.IteratorOfList 
                 obj.List.removeAt(obj.Index-1);
                 obj.Index = obj.Index - 1;
             catch
-                % TODO: throw NoSuchElementException
-                error('IllegalState')
+                throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.Index-1), ' does not exist.']));
             end
         end
     end

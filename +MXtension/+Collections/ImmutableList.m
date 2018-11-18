@@ -72,10 +72,10 @@ classdef ImmutableList < MXtension.Collections.List
                         index = index + 1;
                     end
                 else
-                    % TODO: IllegalArgument (containerType)
+                    throw(MException('MXtension:IllegalArgumentException', 'The passed collection type is not supported.'));
                 end
             else
-                % TODO: IllegalArgument (commandType)
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             
             

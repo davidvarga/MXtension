@@ -29,7 +29,7 @@ classdef ListIterator < MXtension.Collections.Iterators.IteratorOfList
                 
             catch
                 % TODO: throw NoSuchElementException
-                error('NoSuchElementException')
+                throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.Index-1), ' does not exist.']));
             end
         end
         

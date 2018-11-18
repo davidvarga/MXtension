@@ -60,14 +60,12 @@ classdef ImmutableMap < MXtension.Collections.Map
                     elseif isa(entryOrPair, 'MXtension.Pair')
                         obj.InnerMap(entryOrPair.First) = entryOrPair.Second;
                     else
-                        % TODO: IllegalArgument
-                        error('IllegalArgument')
+                        throw(MException('MXtension:IllegalArgumentException', 'The passed source map type is not supported.'));
                     end
                     
                 end
             else
-                % TODO: IllegalArgument
-                error('IllegalArgument')
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             
             

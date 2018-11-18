@@ -20,12 +20,13 @@ classdef MutableListIterator < MXtension.Collections.Iterators.ListIterator & MX
         end
         
         function obj = remove(obj)
+            if isempty(obj.LastIndex)
+                throw(MException('MXtension:IllegalStateException', 'The last index of the iterator is empty.'));
+            end
             try
                 obj.List.removeAt(obj.LastIndex);
-                %    obj.Index = obj.Index - 1;
             catch
-                % TODO: throw NoSuchElementException
-                error('IllegalState')
+                throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.LastIndex), ' does not exist.']));
             end
         end
         
@@ -46,9 +47,13 @@ classdef MutableListIterator < MXtension.Collections.Iterators.ListIterator & MX
         
         function set(obj, element)
             if isempty(obj.LastIndex)
-                error('IllegalState')
+                throw(MException('MXtension:IllegalStateException', 'The last index of the iterator is empty.'));
             end
-            obj.List.set(obj.LastIndex, element);
+            try
+                obj.List.set(obj.LastIndex, element);
+            catch
+                throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.LastIndex), ' does not exist.']));
+            end
         end
     end
 end

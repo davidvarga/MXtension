@@ -26,10 +26,8 @@ classdef IteratorOfList < MXtension.Collections.Iterators.Iterator
             try
                 nextElement = obj.List.get(obj.Index);
                 obj.Index = obj.Index + 1;
-                
             catch
-              
-               throw(MException('MXtension:NoSuchElementException', 'The collection is empty.'));
+               throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.Index), ' does not exist.']));
             end
         end
         

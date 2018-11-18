@@ -48,8 +48,7 @@ classdef HashMap < MXtension.Collections.MutableMap
                         obj.InnerMap(key) = source.get(key);
                     end
                 else
-                    % TODO: IllegalArgument
-                    error('IllegalArgument')
+                    throw(MException('MXtension:IllegalArgumentException', 'The passed source map type is not supported.'));
                 end
                 
             elseif strcmp(sourceType, 'entries')

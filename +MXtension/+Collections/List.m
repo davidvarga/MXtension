@@ -2,24 +2,13 @@ classdef (Abstract) List < MXtension.Collections.Collection
     % Typeless list interface.
     
     methods(Static, Abstract)
-        
         list = ofSize(size, varargin)
     end
     
     methods(Abstract)
-        %         listIterator = listIterator(obj, varargin);
-        %
         item = get(obj, index)
-        
-        %         indexed = dropLastWhile(obj, predicate)
-        %         indexed = takeLast(obj, n)
-        %         indexed = takeLastWhile(obj, predicate)
+
         % TODO: sortWith, sortBy
-        
-        
-        % foldRightIndexed
-        % foldIndexed
-        
     end
     
     methods
@@ -145,22 +134,7 @@ classdef (Abstract) List < MXtension.Collections.Collection
             end
             list = MXtension.Collections.emptyList();
             
-        end
-        
-        
-        %         function result = zip(obj, otherList, varargin)
-        %             MXtensionList = obj.fromCollection(otherList);
-        %             outSize = min(obj.size(), MXtensionList.size());
-        %             if nargin < 3
-        %                 transform = @(it, other) MXtension.Collections.Pair(it, other);
-        %             else
-        %                 transform = varargin{1};
-        %             end
-        %
-        %             result = obj.take(outSize).mapIndexed(@(it, ind) transform(it, MXtensionList.get(ind)));
-        %         end
-        
-        
+        end        
     end
     
     methods(Access = private, Static)

@@ -1,8 +1,5 @@
 classdef (Abstract) CollectionTest < matlab.unittest.TestCase
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    
+
     methods(Abstract)
         collection = fromCollection(obj, collection)
         collection = ofElements(obj, varargin)
@@ -34,9 +31,79 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             obj.assertTrue(isa(set, 'MXtension.Collections.Set'));
             obj.assertFalse(isa(set, 'MXtension.Collections.MutableSet'));
         end
+        
+        function mustBePair(obj, pair)
+           obj.assertTrue(isa(pair, 'MXtension.Pair')); 
+        end
+        
+        function constructorBaseTest(testCase, oneToThree, abc, emptyCollection, varargin)
+            checkForOrder = nargin < 5 || (nargin == 5 && varargin{1});
+            collection = testCase.fromCollection(oneToThree);
+            testCase.assertEqual(collection.size(), 3);
+            if checkForOrder
+                collection.forEachIndexed(@(ind, elem) testCase.assertEqual(elem, ind) );
+            end
+            testCase.assertTrue(collection.containsAll(MXtension.listOf(1,2,3)));
+            
+            function checkElement(ind, elem)
+                switch ind
+                    case 1
+                        testCase.assertEqual(elem, 'a');
+                    case 2
+                        testCase.assertEqual(elem, 'b');
+                    case 3
+                        testCase.assertEqual(elem, 'c');
+                end
+            end
+            collection = testCase.fromCollection(abc);
+            testCase.assertEqual(collection.size(), 3);
+            if checkForOrder
+                collection.forEachIndexed(@(ind, elem) checkElement(ind, elem) );
+            end
+            testCase.assertTrue(collection.containsAll(MXtension.listOf('a','b','c')));
+            
+            
+            
+            collection = testCase.fromCollection(emptyCollection);
+            testCase.assertEqual(collection.size(), 0);
+        end
     end
     
     methods(Test)
+        
+        function test_construct_with_fromCollection_CellArray(testCase)
+            testCase.constructorBaseTest({1,2,3}, {'a','b','c'}, {});
+        end
+        
+        function test_construct_with_fromCollection_List(testCase)      
+            testCase.constructorBaseTest(MXtension.listFrom({1,2,3}), MXtension.listFrom({'a','b','c'}), MXtension.listOf());
+        end
+        
+        function test_construct_with_fromCollection_Set(testCase)    
+            testCase.constructorBaseTest(MXtension.setFrom({1,2,3}), MXtension.setFrom({'a','b','c'}), MXtension.setOf());
+        end
+        
+        function test_construct_with_fromCollection_JavaList(testCase)
+            testCase.constructorBaseTest(testCase.javaListOf(1,2,3), testCase.javaListOf('a','b','c'), testCase.javaListOf());
+        end
+        
+        function test_construct_with_fromCollection_JavaSet(testCase)
+             testCase.constructorBaseTest(testCase.javaSetOf(1,2,3), testCase.javaSetOf('a','b','c'), testCase.javaSetOf(), false);
+          
+        end
+        
+        function test_construct_with_ofElements(testCase)
+            testCase.constructorBaseTest(testCase.ofElements(1,2,3), testCase.ofElements('a','b','c'), testCase.ofElements());
+        end
+        
+        function test_construct_with_invalidCollectionType(testCase)
+            try
+            testCase.fromCollection([1,2,3]);
+            catch ex
+               testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+               testCase.assertEqual(ex.message, 'The passed collection type is not supported.');
+            end
+        end
         
         % TODO: withIndex
         
@@ -724,14 +791,14 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         
         function test_partition(testCase)
             pair = testCase.ofElements().partition(@(x) true);
-            testCase.assertTrue(isa(pair, 'MXtension.Pair'));
+            testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 0);
             testCase.assertEqual(pair.Second.size(), 0);
             
             pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) true);
-            testCase.assertTrue(isa(pair, 'MXtension.Pair'));
+            testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 6);
@@ -739,7 +806,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(pair.First.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
             
             pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) false);
-            testCase.assertTrue(isa(pair, 'MXtension.Pair'));
+            testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 0);
@@ -747,13 +814,118 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(pair.Second.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
             
             pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) x > 3);
-            testCase.assertTrue(isa(pair, 'MXtension.Pair'));
+            testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 2);
             testCase.assertEqual(pair.Second.size(), 4);
             testCase.assertTrue(pair.First.containsAll(testCase.ofElements(4, 5)));
             testCase.assertTrue(pair.Second.containsAll(testCase.ofElements(0, 1, 2, 3)));
+        end
+        
+        function test_zip(testCase)
+            % Zip without transform
+            list = testCase.ofElements().zip(testCase.ofElements());
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().zip(MXtension.setOf(1,2,3));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf());
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            for i = 1: 3
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.First, i);
+                switch i
+                    case 1
+                        testCase.assertEqual(elem.Second, 'a'); break;
+                    case 2
+                        testCase.assertEqual(elem.Second, 'b'); break;
+                    case 3
+                        testCase.assertEqual(elem.Second, 'c'); break;
+                end
+            end
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            for i = 1: 2
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.First, i);
+                testCase.assertEqual(elem.Second, i*10);
+            end
+            
+            list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            for i = 1: 2
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.First, i);
+                testCase.assertEqual(elem.Second, i*10);
+            end
+            
+            
+            % Zip with transform
+            list = testCase.ofElements().zip(testCase.ofElements(), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().zip(MXtension.setOf(1,2,3), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            for i = 1: 3
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.Second, i);
+                switch i
+                    case 1
+                        testCase.assertEqual(elem.First, 'a'); break;
+                    case 2
+                        testCase.assertEqual(elem.First, 'b'); break;
+                    case 3
+                        testCase.assertEqual(elem.First, 'c'); break;
+                end
+            end
+            
+            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            for i = 1: 2
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.Second, i);
+                testCase.assertEqual(elem.First, i*10);
+            end
+            
+            list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30), @(first, second) MXtension.Pair(second, first));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            for i = 1: 2
+                elem = list.get(i);
+                testCase.mustBePair(elem);
+                testCase.assertEqual(elem.Second, i);
+                testCase.assertEqual(elem.First, i*10);
+            end
         end
         
         
