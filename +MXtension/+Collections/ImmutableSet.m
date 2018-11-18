@@ -1,4 +1,4 @@
-classdef ImmutableSet < MXtension.Collections.Collection
+classdef ImmutableSet < MXtension.Collections.Set
     %
     
     properties(Access = protected)

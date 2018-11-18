@@ -323,7 +323,7 @@ classdef (Abstract) Collection < handle
         end
         
         function index = indexOfFirst(obj, predicate)
-            % index: double = indexOfFirst(predicate: (Any) -> logical) : Returns index of the first element matching the given predicate, 
+            % index: double = indexOfFirst(predicate: (Any) -> logical) : Returns index of the first element matching the given predicate,
             % or -1 if the list does not contain such element.
             
             iterator = obj.iterator();
@@ -339,7 +339,7 @@ classdef (Abstract) Collection < handle
         end
         
         function lastIndex = indexOfLast(obj, predicate)
-            % lastIndex: double = indexOfLast(predicate: (Any) -> logical) : Returns index of the last element matching the given predicate, or -1 if 
+            % lastIndex: double = indexOfLast(predicate: (Any) -> logical) : Returns index of the last element matching the given predicate, or -1 if
             % the list does not contain such element.
             
             iterator = obj.iterator();
@@ -390,7 +390,7 @@ classdef (Abstract) Collection < handle
         
         
         function elem = elementAt(obj, index)
-            % elem: Any = elementAt(index: double) : Returns an element at the given index or throws an MException with the id of 
+            % elem: Any = elementAt(index: double) : Returns an element at the given index or throws an MException with the id of
             % MXtension:IndexOutOfBoundsException if the index is out of bounds of this collection.
             
             iterator = obj.iterator();
@@ -407,10 +407,10 @@ classdef (Abstract) Collection < handle
         end
         
         function elem = elementAtOrElse(obj, index, defaultValue)
-            % elem: Any = elementAtOrElse(index: double, defaultValue: (double) -> Any) : Returns an element at the given index or the result of 
+            % elem: Any = elementAtOrElse(index: double, defaultValue: (double) -> Any) : Returns an element at the given index or the result of
             % calling the defaultValue function if the index is out of bounds of this collection.
             %
-            % elem: Any = elementAtOrElse(index: double, defaultValue: Any) : Returns an element at the given index or the value defined in the 
+            % elem: Any = elementAtOrElse(index: double, defaultValue: Any) : Returns an element at the given index or the value defined in the
             % defaultValue parameter.
             
             try
@@ -491,7 +491,6 @@ classdef (Abstract) Collection < handle
             list = MXtension.listFrom(result(1:index));
         end
         
-        %%%%%% TODO %%%%%%%%%%
         function list = take(obj, n)
             % list: MXtension.Collections.List = take(n: double) : Returns a list containing first n elements if possible.
             
@@ -509,7 +508,7 @@ classdef (Abstract) Collection < handle
                 return
             end
             
-             if n == 1
+            if n == 1
                 list = MXtension.listOf(obj.first());
                 return
             end
@@ -535,23 +534,25 @@ classdef (Abstract) Collection < handle
         end
         
         function list = takeWhile(obj, predicate)
+            % list: MXtension.Collections.List = takeWhile(predicate: (Any) -> logical) : Returns a list containing first elements satisfying the given predicate.
             
             iterator = obj.iterator();
-            index = 1;
+            index = 0;
             result = cell(1, obj.count());
             while iterator.hasNext()
                 elem = iterator.next();
                 if ~predicate(elem)
                     break
                 end
-                result{index} = elem;
                 index = index + 1;
+                result{index} = elem;
             end
             
-            list = MXtension.listFrom(result);
+            list = MXtension.listFrom(result(1:index));
         end
         
         function list = drop(obj, n)
+            % list: MXtension.Collections.List = drop(n: double) : Returns a list containing all elements except first n elements.
             count = obj.count();
             if n > count
                 list = MXtension.emptyList();
@@ -568,27 +569,25 @@ classdef (Abstract) Collection < handle
                         result{index} = elem;
                         index = index + 1;
                     end
-                    
-                    
                 end
                 
                 list = MXtension.listFrom(result);
             end
-            
         end
         
         function list = dropWhile(obj, predicate)
+            % list: MXtension.Collections.List = dropWhile(predicate: (Any) -> logial) : Returns a list containing all elements except first elements that satisfy the given predicate.
             yielding = false;
-            
             
             iterator = obj.iterator();
             
             objIndex = 1;
             index = 1;
+            result = [];
             while iterator.hasNext()
                 elem = iterator.next();
                 if yielding
-                    result{index} = elem;
+                    result{index} = elem; %#ok<AGROW>
                     index = index + 1;
                 elseif ~predicate(elem)
                     result = cell(1, obj.count()-objIndex+1);
@@ -599,13 +598,24 @@ classdef (Abstract) Collection < handle
                 end
                 
                 objIndex = objIndex + 1;
-                
             end
-            list = MXtension.listFrom(result);
+            
+            if ~iscell(result)
+                list = MXtension.emptyList();
+            else
+                list = MXtension.listFrom(result);
+            end
+            
         end
         
-        
         function acc = fold(obj, initialValue, operation)
+            % acc: Any = fold(initialValue: A, operation: (A, Any) -> A) : Accumulates value starting with initial value and applying operation from
+            % left to right to current accumulator value and each element.
+            %
+            % Parameters:
+            %   initialValue - The initial accumulated value with any type.
+            %   operation - Function that takes the current accumulated value and the current element as arguments and produces the new accumulated
+            %   value.
             
             acc = initialValue;
             iterator = obj.iterator();
@@ -615,56 +625,144 @@ classdef (Abstract) Collection < handle
         end
         
         function acc = foldIndexed(obj, initialValue, operation)
+            % acc: Any = foldIndexed(initialValue: A, operation: (double, A, Any) -> A) : Accumulates value starting with initial value and applying
+            % operation from left to right to current accumulator value and each element with its index in the original collection.
+            %
+            % Parameters:
+            %   initialValue - The initial accumulated value with any type.
+            %   operation - Function that takes the index of the current element, the current accumulated value and the current element as arguments
+            %       and produces the new accumulated value.
             
             acc = initialValue;
             iterator = obj.iterator();
             index = 1;
             while iterator.hasNext()
-                acc = operation(acc, index, iterator.next());
+                acc = operation(index, acc, iterator.next());
                 index = index + 1;
             end
         end
         
-        function list = map(obj, handle)
+        function list = map(obj, transform)
+            % list: MXtension.Collections.List = map(transform: (Any) -> Any) : Returns a list containing the results of applying the given transform
+            % function to each element in the original collection.
             
             result = cell(1, obj.count());
             iterator = obj.iterator();
             index = 1;
             while iterator.hasNext()
-                result{index} = handle(iterator.next());
+                result{index} = transform(iterator.next());
                 index = index + 1;
             end
             
-            
-            list = MXtension.Collections.ArrayList.fromCollection(result);
-            
+            list = MXtension.listFrom(result);
         end
         
-        function list = mapNotNull(obj, handle)
+        function list = mapNotNull(obj, transform)
+            % list: MXtension.Collections.List = mapNotNull(transform: (Any) -> Any) : Returns a list containing only the non-null results of applying
+            % the given transform function to each element in the original collection.
             
             list = MXtension.mutableListOf();
             
-            
-            result = cell(1, obj.count());
             iterator = obj.iterator();
             
             while iterator.hasNext()
-                next = handle(iterator.next());
+                next = transform(iterator.next());
                 if ~MXtension.equals(next, [])
                     list.add(next);
                 end
-                
             end
             
+            list = list.toList();
         end
         
-        function mutableSet = intersect(obj, iterable)
-            mutableSet = obj.toMutableSet();
-            mutableSet.retainAll(iterable);
+        function list = mapNotEmpty(obj, transform)
+            % list: MXtension.Collections.List = mapNotEmpty(transform: (Any) -> Any) : Returns a list containing only the non-empty (~isempty(..)) results of applying
+            % the given transform function to each element in the original collection.
             
+            list = MXtension.mutableListOf();
+            
+            iterator = obj.iterator();
+            
+            while iterator.hasNext()
+                next = transform(iterator.next());
+                if ~isempty(next)
+                    list.add(next);
+                end
+            end
+            
+            list = list.toList();
+        end
+        
+        function list = mapIndexed(obj, transform)
+            % list: MXtension.Collections.List = mapIndexed(transform: (double, Any) -> Any) : Returns a list containing the results of applying the
+            % given transform function to each element and its index in the original collection.
+            %
+            % Parameters:
+            %   transform - function that takes the index of an element and the element itself and returns the result of the transform applied to the element.
+            
+            result = cell(1, obj.count());
+            iterator = obj.iterator();
+            index = 1;
+            while iterator.hasNext()
+                result{index} = transform(index, iterator.next());
+                index = index + 1;
+            end
+            
+            list = MXtension.listFrom(result);
+        end
+        
+        function list = flatMap(obj, transform)
+            % list: MXtension.Collections.List = flatMap(transform: (Any) -> MXtension.Collections.Collection) : Returns a single list of all elements
+            % yielded from results of transform function being invoked on each element of original collection.
+            %
+            % Parameters:
+            %   transform - function that takes the element and returns a collection of any type.
+            
+            iterator = obj.iterator();
+            list = MXtension.mutableListOf();
+            while iterator.hasNext()
+                list.addAll(transform(iterator.next()));
+            end
+            
+            list = list.toList();
+        end
+        
+        function list = flatten(obj)
+            % list: MXtension.Collections.List = flatten() : Returns a single list of all elements from all collections in the given collection.
+            % The elements of this collection must be instaces of MXtension.Collections.Collection.
+            
+            iterator = obj.iterator();
+            list = MXtension.mutableListOf();
+            while iterator.hasNext()
+                list.addAll(iterator.next());
+            end
+            
+            
+            list = list.toList();
+        end
+        
+        function set = intersect(obj, collection)
+            % set: MXtension.Collections.Set = intersect(iterable: MXtension.Collections.Collection) : Returns a set containing all elements that are
+            % contained by both this set and the specified collection.
+            % The returned set preserves the element iteration order of the original collection.
+            
+            mutableSet = obj.toMutableSet();
+            mutableSet.retainAll(collection);
+            set = mutableSet.toSet();
+        end
+        
+        function list = distinct(obj)
+            % list: list: MXtension.Collections.List = distinct() : Returns a list containing only distinct elements from the given collection.
+            % The elements in the resulting list are in the same order as they were in the source collection.
+            % The equality is performed usinf MXtension.equals().
+            
+            list = obj.toSet().toList();
         end
         
         function pairOfLists = partition(obj, predicate)
+            % pairOfLists: MXtension.Pair<MXtension.Collections.List, MXtension.Collections.List> = partition(predicate: (Any) -> logical) :
+            % Splits the original collection into pair of lists, where first list contains elements for which predicate yielded true, while second
+            % list contains elements for which predicate yielded false.
             
             first = cell(1, obj.size());
             firstIndex = 0;
@@ -683,43 +781,28 @@ classdef (Abstract) Collection < handle
                 end
             end
             
-            pairOfLists = MXtension.Pair(MXtension.listFromCollection(first(1:firstIndex)), ...
-                MXtension.listFromCollection(second(1:secondIndex)));
+            pairOfLists = MXtension.Pair(MXtension.listFrom(first(1:firstIndex)), MXtension.listFrom(second(1:secondIndex)));
         end
         
-        function list = mapIndexed(obj, transform)
+        function listOfPairs = zip(obj, otherIterable, varargin)
+            if nargin < 3
+                transform = @(first, second) MXtension.Pair(first, second);
+            else
+                transform = varargin{1};
+            end
             
-            result = cell(1, obj.count());
-            iterator = obj.iterator();
+            firstIterator = obj.iterator();
+            otherIterator = otherIterable.iterator();
+            
+            result = cell(1, min(obj.count(), otherIterable.count()));
             index = 1;
-            while iterator.hasNext()
-                result{index} = transform(iterator.next(), index);
+            while firstIterator.hasNext() && otherIterator.hasNext()
+                result{index} = transform(firstIterator.next(), otherIterator.next());
                 index = index + 1;
             end
             
-            list = MXtension.Collections.ArrayList.fromCollection(result);
-        end
-        
-        function list = flatMap(obj, transform)
-            iterator = obj.iterator();
-            list = MXtension.mutableListOf();
-            while iterator.hasNext()
-                list.addAll(transform(iterator.next()));
-            end
+            listOfPairs = MXtension.Collections.ImmutableList.fromCollection(result);
             
-            
-            list = list.toList();
-        end
-        
-        function list = flatten(obj)
-            iterator = obj.iterator();
-            list = MXtension.mutableListOf();
-            while iterator.hasNext()
-                list.addAll(iterator.next());
-            end
-            
-            
-            list = list.toList();
         end
         
         
@@ -799,36 +882,7 @@ classdef (Abstract) Collection < handle
             map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
         end
         
-        function list = distinct(obj)
-            list = obj.toSet().toList();
-        end
-        % TODO!
-        %         function list = distinctBy(obj, selector)
-        %
-        %
-        %             list = obj.toSet().toList();
-        %         end
-        
-        function listOfPairs = zip(obj, otherIterable, varargin)
-            if nargin < 3
-                transform = @(first, second) MXtension.Pair(first, second);
-            else
-                transform = varargin{1};
-            end
-            
-            firstIterator = obj.iterator();
-            otherIterator = otherIterable.iterator();
-            
-            result = cell(1, min(obj.count(), otherIterable.count()));
-            index = 1;
-            while firstIterator.hasNext() && otherIterator.hasNext()
-                result{index} = transform(firstIterator.next(), otherIterator.next());
-                index = index + 1;
-            end
-            
-            listOfPairs = MXtension.Collections.ImmutableList.fromCollection(result);
-            
-        end
+
         
         function str = joinToChar(obj, varargin)
             prefix = '';

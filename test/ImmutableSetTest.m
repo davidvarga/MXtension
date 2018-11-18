@@ -60,6 +60,65 @@ classdef ImmutableSetTest < CollectionTest & matlab.unittest.TestCase
             testCase.assertEqual(collection.lastIndexOf(0), -1);
             testCase.assertEqual(collection.lastIndexOf('123'), -1);
         end
+        % Override because of element uniqeness
+        function test_mapNotNull(testCase)
+            % Mapping empty collection creates an empty list
+            emptyList = testCase.ofElements().mapNotNull(@(e) e);
+            testCase.mustBeList(emptyList);
+            testCase.assertEqual(emptyList.size(), 0);
+            
+            % List containing nulls 
+            list = testCase.ofElements(1, [], 2, [], [], 3, 4, 5, []).mapNotNull(@(e) e);
+            testCase.mustBeList(list);
+            for i = 1:5
+               testCase.assertEqual(list.get(i), i); 
+            end
+            testCase.assertEqual(list.size(), 5);
+            
+            list = testCase.ofElements('a', 'bb', 'ccc').mapNotNull(@(elem) numel(elem));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            for i = 1:3
+               testCase.assertEqual(list.get(i), i); 
+            end
+            
+            % List containing nulls 
+            list = testCase.ofElements(0, [], '', [], [], 0, struct()).mapNotNull(@(e) e);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.get(1), 0); 
+            testCase.assertEqual(list.get(2), ''); 
+            testCase.assertEqual(list.get(3), struct()); 
+            testCase.assertEqual(list.size(), 3);
+         end
+        
+         function test_mapNotEmpty(testCase)
+            % Mapping empty collection creates an empty list
+            emptyList = testCase.ofElements().mapNotEmpty(@(e) e);
+            testCase.mustBeList(emptyList);
+            testCase.assertEqual(emptyList.size(), 0);
+            
+            % List containing nulls 
+            list = testCase.ofElements(1, [], 2, [], [], 3, 4, 5, []).mapNotEmpty(@(e) e);
+            testCase.mustBeList(list);
+            for i = 1:5
+               testCase.assertEqual(list.get(i), i); 
+            end
+            testCase.assertEqual(list.size(), 5);
+            
+            list = testCase.ofElements('a', 'bb', 'ccc').mapNotEmpty(@(elem) numel(elem));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            for i = 1:3
+               testCase.assertEqual(list.get(i), i); 
+            end
+            
+            % List containing nulls 
+            list = testCase.ofElements(0, [], '', [], '', [], 0, {}, {'a'}).mapNotEmpty(@(e) e);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.get(1), 0); 
+            testCase.assertEqual(list.get(2), {'a'}); 
+            testCase.assertEqual(list.size(), 2);
+        end
         
       
     end
