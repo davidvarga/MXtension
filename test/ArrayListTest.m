@@ -2,16 +2,9 @@
 classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
     
     methods
-          
-        function collection = fromCollection(obj, collection)
-            collection = MXtension.Collections.ArrayList.fromCollection(collection);
+        function classUnderTest = classUnderTest(obj)
+            classUnderTest = 'MXtension.Collections.ArrayList';
         end
-        
-        function collection = ofElements(obj, varargin)
-            collection = MXtension.Collections.ArrayList.ofElements(varargin{:});
-        end
-    
-     
     end
     
 

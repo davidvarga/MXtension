@@ -518,7 +518,7 @@ classdef (Abstract) Collection < handle
                 list = MXtension.emptyList();
                 return;
             else
-                list = MXtension.Collections.ArrayList.ofSize(outSize);
+                list = MXtension.mutableListFrom(cell(1,outSize));
                 iterator = obj.iterator();
                 outCount = 0;
                 while iterator.hasNext()
@@ -821,29 +821,45 @@ classdef (Abstract) Collection < handle
         
         
         function map = associate(obj, transformer)
+            % map: MXtension.Collections.Map = associate(transformer: (Any) -> MXtension.Pair) : Returns a Map containing key-value pairs provided by 
+            % transform function applied to elements of the given collection.
+            % If any of two pairs would have the same key the last one gets added to the map.
+            % The returned map preserves the entry iteration order of the original collection.
+            
             innerMap = containers.Map();
             iterator = obj.iterator();
             keyType = '';
             while iterator.hasNext()
-                
-                entry = transformer(iterator.next());
+                pair = transformer(iterator.next());
                 if isempty(keyType)
-                    keyType = class(entry.Key);
+                    keyType = class(pair.First);
                     innerMap = containers.Map('KeyType', keyType, 'ValueType', 'any');
                 end
-                innerMap(entry.Key) = entry.Value;
+                innerMap(pair.First) = pair.Second;
             end
             map = MXtension.mapFrom(innerMap);
         end
         
-        function map = associateWith(obj, valueSelector)
-            map = obj.associate(@(it) MXtension.Collections.Entry(it, valueSelector(it)));
+        function map = associateWith(obj, valueTransform)
+            % map: MXtension.Collections.Map = associateWith(valueTransform: (Any) -> Any) : Returns a Map where keys are elements from the given 
+            % collection and values are produced by the valueTransform function applied to each character.
+            % If any two characters are equal, the last one gets added to the map.
+            % The returned map preserves the entry iteration order of the original char sequence.
             
+            map = obj.associate(@(it) MXtension.Pair(it, valueTransform(it)));
         end
         
-        
-        function map = associateBy(obj, selector, varargin)
-            % Always takes the last
+        function map = associateBy(obj, keySelector, varargin)
+            % map: MXtension.Collections.Map = associateBy(keySelector: (Any) -> Any) : Returns a Map containing the elements from the given 
+            % collection indexed by the key returned from keySelector function applied to each element.
+            % If any two elements would have the same key returned by keySelector the last one gets added to the map.
+            % The returned map preserves the entry iteration order of the original collection.
+            %
+            % map: MXtension.Collections.Map = associateBy(obj, keySelector: (Any) -> Any, valueTransform: (Any) -> Any) : Returns a Map containing 
+            % the values provided by valueTransform and indexed by keySelector functions applied to elements of the given collection.
+            % If any two elements would have the same key returned by keySelector the last one gets added to the map.
+            % The returned map preserves the entry iteration order of the original collection.
+
             mapInited = false;
             innerMap = [];
             iterator = obj.iterator();
@@ -856,7 +872,7 @@ classdef (Abstract) Collection < handle
                     value = element;
                 end
                 
-                key = selector(element);
+                key = keySelector(element);
                 
                 if ~mapInited
                     innerMap = containers.Map('KeyType', class(key), 'ValueType', 'any');
@@ -868,24 +884,41 @@ classdef (Abstract) Collection < handle
                 innerMap = containers.Map();
             end
             
-            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
+            map = MXtension.mapFrom(innerMap);
         end
         
-        function map = groupBy(obj, keySelector)
-            % Always takes the last
+        function map = groupBy(obj, keySelector, varargin)
+            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any) : Groups elements of the original 
+            % collection by the key returned by the given keySelector function applied to each element and returns a map where each group key is 
+            % associated with a list of corresponding elements.
+            % The returned map preserves the entry iteration order of the keys produced from the original collection.
+            %
+            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any, valueTransform: (Any) -> Any) : 
+            % Groups values returned by the valueTransform function applied to each element of the original collection by the key returned by the 
+            % given keySelector function applied to the element and returns a map where each group key is associated with a list of corresponding values.
+            % The returned map preserves the entry iteration order of the keys produced from the original collection.
+            
             mapInited = false;
             innerMap = [];
             iterator = obj.iterator();
+            
             while iterator.hasNext()
-                value = iterator.next();
-                key = keySelector(value);
+                next = iterator.next();
+                if nargin > 2
+                    valueTransform = varargin{1};
+                    value = valueTransform(next);
+                else
+                    value = next;
+                end
+               
+                key = keySelector(next);
                 
                 if ~mapInited
                     innerMap = containers.Map('KeyType', class(key), 'ValueType', 'any');
                     mapInited = true;
                 end
                 if ~innerMap.isKey(key)
-                    innerMap(key) = MXtension.Collections.listOf();
+                    innerMap(key) = MXtension.mutableListOf();
                 end
                 innerMap(key).add(value);
             end
@@ -893,10 +926,22 @@ classdef (Abstract) Collection < handle
                 innerMap = containers.Map();
             end
             
-            map = MXtension.Collections.ImmutableMap.fromMap(innerMap);
+            keys = innerMap.keys();
+            for iKey = 1:numel(keys)
+               elem = innerMap(keys{iKey});
+               innerMap(keys{iKey}) = elem.toList();
+            end
+            
+            map = MXtension.mapFrom(innerMap);
         end
         
-
+        function list = reversed(obj)
+            % list: MXtension.Collections.List = reversed(): Returns a list with elements in reversed order.
+            
+            list = obj.toMutableList();
+            list.reverse();
+            list = list.toList();
+        end
         
         function str = joinToChar(obj, varargin)
             prefix = '';
@@ -947,13 +992,7 @@ classdef (Abstract) Collection < handle
             
         end
         
-        function list = reversed(obj)
-            
-            list = obj.toList();
-            list.reverse();
-            
-            
-        end
+        
         
         function list = toList(obj)
             list = MXtension.Collections.ImmutableList.fromCollection(obj);

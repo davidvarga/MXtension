@@ -2,6 +2,7 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
     %UNTITLED8 Summary of this class goes here
     %   Detailed explanation goes here
     methods(Abstract)
+%         list = ofSize(size, varargin)
         modified = insert(obj, index, elem)
         modified = insertAll(obj, index, collection)
         previous = set(obj, index, element)
@@ -11,7 +12,6 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
         
         obj = reverse(obj)
     end
-    
     
     methods
         

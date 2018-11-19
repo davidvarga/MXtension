@@ -1,9 +1,7 @@
 classdef (Abstract) List < MXtension.Collections.Collection
     % Typeless list interface.
     
-    methods(Static, Abstract)
-        list = ofSize(size, varargin)
-    end
+    
     
     methods(Abstract)
         item = get(obj, index)
@@ -98,7 +96,7 @@ classdef (Abstract) List < MXtension.Collections.Collection
             
             outSize = min(n, count);
             
-            list = MXtension.Collections.ArrayList.ofSize(outSize);
+            list = MXtension.mutableListFrom(cell(1, outSize));
             
             index = 1;
             for i = count - outSize + 1:count

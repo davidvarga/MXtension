@@ -19,12 +19,7 @@ classdef ArrayList < MXtension.Collections.MutableList
             
             list = MXtension.Collections.ArrayList('elements', varargin);
         end
-        
-        function list = ofSize(size)
-            % Returns a new List with the size of the input argument. All elements are null ([]) by default.
-            
-            list = MXtension.Collections.ArrayList('size', size);
-        end
+
     end
     
     methods(Access = protected)

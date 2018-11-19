@@ -1,11 +1,11 @@
 classdef (Abstract) CollectionTest < matlab.unittest.TestCase
-
+    
     methods(Abstract)
-        collection = fromCollection(obj, collection)
-        collection = ofElements(obj, varargin)
+        classUnderTest = classUnderTest(obj)
     end
     
     methods(Static, Access = protected, Sealed)
+        
         function javaList = javaListOf(varargin)
             javaList = java.util.ArrayList();
             for i = 1:numel(varargin)
@@ -22,6 +22,15 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
     end
     
     methods(Access = protected, Sealed)
+        function collection = fromCollection(obj, collection) %#ok<INUSD>
+            collection = eval([obj.classUnderTest(), '.fromCollection(collection);']);
+        end
+        
+        function collection = ofElements(obj, varargin)
+            collection = eval([obj.classUnderTest(), '.ofElements(varargin{:});']);
+        end
+        
+        
         function mustBeList(obj, list)
             obj.assertTrue(isa(list, 'MXtension.Collections.List'));
             obj.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
@@ -32,8 +41,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             obj.assertFalse(isa(set, 'MXtension.Collections.MutableSet'));
         end
         
+        function mustBeMap(obj, list)
+            obj.assertTrue(isa(list, 'MXtension.Collections.Map'));
+            obj.assertFalse(isa(list, 'MXtension.Collections.MutableMap'));
+        end
+        
         function mustBePair(obj, pair)
-           obj.assertTrue(isa(pair, 'MXtension.Pair')); 
+            obj.assertTrue(isa(pair, 'MXtension.Pair'));
         end
         
         function constructorBaseTest(testCase, oneToThree, abc, emptyCollection, varargin)
@@ -41,9 +55,9 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             collection = testCase.fromCollection(oneToThree);
             testCase.assertEqual(collection.size(), 3);
             if checkForOrder
-                collection.forEachIndexed(@(ind, elem) testCase.assertEqual(elem, ind) );
+                collection.forEachIndexed(@(ind, elem) testCase.assertEqual(elem, ind));
             end
-            testCase.assertTrue(collection.containsAll(MXtension.listOf(1,2,3)));
+            testCase.assertTrue(collection.containsAll(MXtension.listOf(1, 2, 3)));
             
             function checkElement(ind, elem)
                 switch ind
@@ -58,10 +72,9 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             collection = testCase.fromCollection(abc);
             testCase.assertEqual(collection.size(), 3);
             if checkForOrder
-                collection.forEachIndexed(@(ind, elem) checkElement(ind, elem) );
+                collection.forEachIndexed(@(ind, elem) checkElement(ind, elem));
             end
-            testCase.assertTrue(collection.containsAll(MXtension.listOf('a','b','c')));
-            
+            testCase.assertTrue(collection.containsAll(MXtension.listOf('a', 'b', 'c')));
             
             
             collection = testCase.fromCollection(emptyCollection);
@@ -72,36 +85,36 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
     methods(Test)
         
         function test_construct_with_fromCollection_CellArray(testCase)
-            testCase.constructorBaseTest({1,2,3}, {'a','b','c'}, {});
+            testCase.constructorBaseTest({1, 2, 3}, {'a', 'b', 'c'}, {});
         end
         
-        function test_construct_with_fromCollection_List(testCase)      
-            testCase.constructorBaseTest(MXtension.listFrom({1,2,3}), MXtension.listFrom({'a','b','c'}), MXtension.listOf());
+        function test_construct_with_fromCollection_List(testCase)
+            testCase.constructorBaseTest(MXtension.listFrom({1, 2, 3}), MXtension.listFrom({'a', 'b', 'c'}), MXtension.listOf());
         end
         
-        function test_construct_with_fromCollection_Set(testCase)    
-            testCase.constructorBaseTest(MXtension.setFrom({1,2,3}), MXtension.setFrom({'a','b','c'}), MXtension.setOf());
+        function test_construct_with_fromCollection_Set(testCase)
+            testCase.constructorBaseTest(MXtension.setFrom({1, 2, 3}), MXtension.setFrom({'a', 'b', 'c'}), MXtension.setOf());
         end
         
         function test_construct_with_fromCollection_JavaList(testCase)
-            testCase.constructorBaseTest(testCase.javaListOf(1,2,3), testCase.javaListOf('a','b','c'), testCase.javaListOf());
+            testCase.constructorBaseTest(testCase.javaListOf(1, 2, 3), testCase.javaListOf('a', 'b', 'c'), testCase.javaListOf());
         end
         
         function test_construct_with_fromCollection_JavaSet(testCase)
-             testCase.constructorBaseTest(testCase.javaSetOf(1,2,3), testCase.javaSetOf('a','b','c'), testCase.javaSetOf(), false);
-          
+            testCase.constructorBaseTest(testCase.javaSetOf(1, 2, 3), testCase.javaSetOf('a', 'b', 'c'), testCase.javaSetOf(), false);
+            
         end
         
         function test_construct_with_ofElements(testCase)
-            testCase.constructorBaseTest(testCase.ofElements(1,2,3), testCase.ofElements('a','b','c'), testCase.ofElements());
+            testCase.constructorBaseTest(testCase.ofElements(1, 2, 3), testCase.ofElements('a', 'b', 'c'), testCase.ofElements());
         end
         
         function test_construct_with_invalidCollectionType(testCase)
             try
-            testCase.fromCollection([1,2,3]);
+                testCase.fromCollection([1, 2, 3]);
             catch ex
-               testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
-               testCase.assertEqual(ex.message, 'The passed collection type is not supported.');
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The passed collection type is not supported.');
             end
         end
         
@@ -829,7 +842,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
             
-            list = testCase.ofElements().zip(MXtension.setOf(1,2,3));
+            list = testCase.ofElements().zip(MXtension.setOf(1, 2, 3));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
             
@@ -841,24 +854,27 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 3);
-            for i = 1: 3
+            for i = 1:3
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.First, i);
                 switch i
                     case 1
-                        testCase.assertEqual(elem.Second, 'a'); break;
+                        testCase.assertEqual(elem.Second, 'a');
+                        break;
                     case 2
-                        testCase.assertEqual(elem.Second, 'b'); break;
+                        testCase.assertEqual(elem.Second, 'b');
+                        break;
                     case 3
-                        testCase.assertEqual(elem.Second, 'c'); break;
+                        testCase.assertEqual(elem.Second, 'c');
+                        break;
                 end
             end
             
             list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 2);
-            for i = 1: 2
+            for i = 1:2
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.First, i);
@@ -868,7 +884,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 2);
-            for i = 1: 2
+            for i = 1:2
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.First, i);
@@ -881,7 +897,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
             
-            list = testCase.ofElements().zip(MXtension.setOf(1,2,3), @(first, second) MXtension.Pair(second, first));
+            list = testCase.ofElements().zip(MXtension.setOf(1, 2, 3), @(first, second) MXtension.Pair(second, first));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
             
@@ -893,24 +909,27 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'), @(first, second) MXtension.Pair(second, first));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 3);
-            for i = 1: 3
+            for i = 1:3
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.Second, i);
                 switch i
                     case 1
-                        testCase.assertEqual(elem.First, 'a'); break;
+                        testCase.assertEqual(elem.First, 'a');
+                        break;
                     case 2
-                        testCase.assertEqual(elem.First, 'b'); break;
+                        testCase.assertEqual(elem.First, 'b');
+                        break;
                     case 3
-                        testCase.assertEqual(elem.First, 'c'); break;
+                        testCase.assertEqual(elem.First, 'c');
+                        break;
                 end
             end
             
             list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20), @(first, second) MXtension.Pair(second, first));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 2);
-            for i = 1: 2
+            for i = 1:2
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.Second, i);
@@ -920,12 +939,165 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30), @(first, second) MXtension.Pair(second, first));
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 2);
-            for i = 1: 2
+            for i = 1:2
                 elem = list.get(i);
                 testCase.mustBePair(elem);
                 testCase.assertEqual(elem.Second, i);
                 testCase.assertEqual(elem.First, i*10);
             end
+        end
+        
+        function test_associate(testCase)
+            map = testCase.ofElements().associate(@(x) MXtension.Pair('a', 2));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            map = testCase.ofElements({'a', 1}, {'b', 2}, {'c', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get('a'), 1);
+            testCase.assertEqual(map.get('b'), 2);
+            testCase.assertEqual(map.get('c'), 3);
+            
+            map = testCase.ofElements({'a', 1}, {'a', 2}, {'a', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 1);
+            testCase.assertEqual(map.get('a'), 3);
+        end
+        
+        function test_associateBy(testCase)
+            map = testCase.ofElements().associateBy(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            map = testCase.ofElements().associateBy(@(x) double(x), @(x) [x, '-1']);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            
+            map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(97), 'a');
+            testCase.assertEqual(map.get(98), 'b');
+            testCase.assertEqual(map.get(99), 'c');
+            
+            map = testCase.ofElements('a', 'a', 'a').associateBy(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 1);
+            testCase.assertEqual(map.get(97), 'a');
+            
+            map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) double(x), @(x) [x, '-', num2str(double(x))]);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(97), 'a-97');
+            testCase.assertEqual(map.get(98), 'b-98');
+            testCase.assertEqual(map.get(99), 'c-99');
+            
+            map = testCase.ofElements('a', 'a', 'a').associateBy(@(x) double(x), @(x) [x, '-', num2str(double(x))]);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 1);
+            testCase.assertEqual(map.get(97), 'a-97');
+        end
+        
+        function test_associateWith(testCase)
+            map = testCase.ofElements().associateWith(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            map = testCase.ofElements('a', 'b', 'c').associateWith(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get('a'), 97);
+            testCase.assertEqual(map.get('b'), 98);
+            testCase.assertEqual(map.get('c'), 99);
+            
+            map = testCase.ofElements('a', 'a', 'a').associateWith(@(x) double(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 1);
+            testCase.assertEqual(map.get('a'), 97);
+        end
+        
+        function test_groupBy(testCase)
+            map = testCase.ofElements().groupBy(@(x) numel(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            map = testCase.ofElements().groupBy(@(x) numel(x), @(x) [x, '-', x]);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 0);
+            
+            map = testCase.ofElements('1', '11', '111').groupBy(@(x) numel(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(1).size(), 1);
+            testCase.mustBeList(map.get(1));
+            testCase.assertTrue(map.get(1).containsAll(MXtension.listOf('1')));
+            testCase.assertEqual(map.get(2).size(), 1);
+            testCase.mustBeList(map.get(2));
+            testCase.assertTrue(map.get(2).containsAll(MXtension.listOf('11')));
+            testCase.assertEqual(map.get(3).size(), 1);
+            testCase.mustBeList(map.get(3));
+            testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111')));
+            
+            map = testCase.ofElements('1', '11', '111', '222', '333', '22').groupBy(@(x) numel(x));
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(1).size(), 1);
+            testCase.mustBeList(map.get(1));
+            testCase.assertTrue(map.get(1).containsAll(MXtension.listOf('1')));
+            testCase.assertEqual(map.get(2).size(), 2);
+            testCase.mustBeList(map.get(2));
+            testCase.assertTrue(map.get(2).containsAll(MXtension.listOf('11', '22')));
+            testCase.assertEqual(map.get(3).size(), 3);
+            testCase.mustBeList(map.get(3));
+            testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111', '222', '333')));
+            
+            %
+            map = testCase.ofElements('1', '11', '111').groupBy(@(x) numel(x), @(x) [x, '-', x]);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(1).size(), 1);
+            testCase.mustBeList(map.get(1));
+            testCase.assertTrue(map.get(1).containsAll(MXtension.listOf('1-1')));
+            testCase.assertEqual(map.get(2).size(), 1);
+            testCase.mustBeList(map.get(2));
+            testCase.assertTrue(map.get(2).containsAll(MXtension.listOf('11-11')));
+            testCase.assertEqual(map.get(3).size(), 1);
+            testCase.mustBeList(map.get(3));
+            testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111-111')));
+            
+            map = testCase.ofElements('1', '11', '111', '222', '333', '22').groupBy(@(x) numel(x), @(x) [x, '-', x]);
+            testCase.mustBeMap(map);
+            testCase.assertEqual(map.keys.size(), 3);
+            testCase.assertEqual(map.get(1).size(), 1);
+            testCase.mustBeList(map.get(1));
+            testCase.assertTrue(map.get(1).containsAll(MXtension.listOf('1-1')));
+            testCase.assertEqual(map.get(2).size(), 2);
+            testCase.mustBeList(map.get(2));
+            testCase.assertTrue(map.get(2).containsAll(MXtension.listOf('11-11', '22-22')));
+            testCase.assertEqual(map.get(3).size(), 3);
+            testCase.mustBeList(map.get(3));
+            testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111-111', '222-222', '333-333')));
+        end
+        
+        function test_reversed(testCase)
+            list = testCase.ofElements().reversed();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements('a', 'b', 'c').reversed();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            testCase.assertEqual(list.get(1), 'c');
+            testCase.assertEqual(list.get(2), 'b');
+            testCase.assertEqual(list.get(3), 'a');
+            
+            list = testCase.ofElements(1, 2).reversed();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            testCase.assertEqual(list.get(1), 2);
+            testCase.assertEqual(list.get(2), 1);
         end
         
         

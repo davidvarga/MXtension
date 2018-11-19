@@ -19,16 +19,6 @@ classdef ImmutableList < MXtension.Collections.List
             
             list = MXtension.Collections.ImmutableList('elements', varargin);
         end
-        
-        function list = ofSize(size, varargin)
-            % Returns a new List with the size of the input argument. All elements are null ([]) by default.
-            if nargin > 1
-                list = MXtension.Collections.ImmutableList('size', {size, varargin{1}});
-            else
-                list = MXtension.Collections.ImmutableList('size', size);
-            end
-            
-        end
     end
     
     methods(Access = protected)

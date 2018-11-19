@@ -27,13 +27,16 @@ classdef ImmutableMap < MXtension.Collections.Map
     methods(Access = protected)
         function obj = ImmutableMap(sourceType, source)
             if strcmp(sourceType, 'map')
-                
                 if isa(source, 'containers.Map')
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
+                    keyType = '';
                     for i =1: numel(keys)
                         key = keys{i};
-%                         entry = MXtension.Collections.Entry(key, source(key));
+                        if isempty(keyType)
+                            keyType = class(key);
+                            obj.InnerMap = containers.Map('KeyType', keyType, 'ValueType', 'any');
+                        end
                         obj.InnerMap(key) = source(key);
                     end
                 elseif isa(source, 'MXtension.Collections.Map')
@@ -81,12 +84,12 @@ classdef ImmutableMap < MXtension.Collections.Map
         
         
         function set = keys(obj)
-            set = MXtension.setOf(obj.InnerMap.keys);
+            set = MXtension.setFrom(obj.InnerMap.keys);
         end
         
         
         function list = values(obj)
-            list = MXtension.listOf(obj.InnerMap.values);
+            list = MXtension.listFrom(obj.InnerMap.values);
         end
         
         

@@ -1,8 +1,6 @@
 classdef Pair < handle
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    properties
+
+    properties (SetAccess = protected)
         First;
         Second;
     end

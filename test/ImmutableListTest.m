@@ -1,24 +1,18 @@
-%% Test Class Definition
+
 classdef ImmutableListTest < CollectionTest & matlab.unittest.TestCase
     
     methods
-          
-        function collection = fromCollection(obj, collection)
-            collection = MXtension.Collections.ImmutableList.fromCollection(collection);
+        function classUnderTest = classUnderTest(obj)
+            classUnderTest = 'MXtension.Collections.ImmutableList';
         end
-        
-        function collection = ofElements(obj, varargin)
-            collection = MXtension.Collections.ImmutableList.ofElements(varargin{:});
-        end
-    
-     
     end
+    
     
     %% Test Method Block
     methods (Test)
         
-       
         
-      
+        
+        
     end
 end
