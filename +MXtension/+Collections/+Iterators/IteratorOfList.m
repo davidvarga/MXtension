@@ -27,7 +27,7 @@ classdef IteratorOfList < MXtension.Collections.Iterators.Iterator
                 nextElement = obj.List.get(obj.Index);
                 obj.Index = obj.Index + 1;
             catch
-               throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.Index), ' does not exist.']));
+               throw(MException('MXtension:NoSuchElementException', 'The requested element cannot be found.'));
             end
         end
         

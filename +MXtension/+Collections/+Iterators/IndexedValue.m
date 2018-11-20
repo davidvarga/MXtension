@@ -1,7 +1,6 @@
 classdef IndexedValue < handle
     
-    
-    properties
+    properties(SetAccess = protected)
         Index;
         Value;
     end

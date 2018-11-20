@@ -1,27 +1,13 @@
 
-classdef ArrayListTest < CollectionTest & matlab.unittest.TestCase
-    
+classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
     methods
         function classUnderTest = classUnderTest(obj)
             classUnderTest = 'MXtension.Collections.ArrayList';
         end
     end
-    
 
     methods (Test)
-
-        function test_list_constructed_with_ofSize(testCase)      
-            list = MXtension.Collections.ArrayList.ofSize(3);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), []);
-            testCase.verifyEqual(list.get(2), []);
-            testCase.verifyEqual(list.get(3), []);
-           
-            list = MXtension.Collections.ArrayList.ofSize(0);
-            testCase.verifyEqual(list.size(), 0);
-        end
-        
-        
+         
         function test_add(testCase)      
             list = MXtension.Collections.ArrayList.ofElements();
             list.add('newelement');

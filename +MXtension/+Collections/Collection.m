@@ -47,15 +47,17 @@ classdef (Abstract) Collection < handle
     end
     
     methods
-        function indexingIterable = withIndex(obj)
-            indexingIterable = MXtension.Collections.IndexedCollection(obj.iterator());
+        function indexedCollection = withIndex(obj)
+            % indexedCollection. MXtension.IndexedCollection = withIndex() : Returns a Collection of IndexedValue for each element of the original collection.
+            
+            indexedCollection = MXtension.Collections.IndexedCollection(@() obj.iterator());
         end
         
         function forEach(obj, action)
             % forEach(action: (Any) -> Unit): Performs the given action on each element.
             %
-            %   Parameters:
-            %       action: Function that takes the element itself and performs the desired action on the element.
+            % Parameters:
+            %   action: Function that takes the element itself and performs the desired action on the element.
             
             iterator = obj.iterator();
             while iterator.hasNext()
@@ -66,8 +68,8 @@ classdef (Abstract) Collection < handle
         function forEachIndexed(obj, action)
             % forEachIndexed(action: (int, Any) -> Unit): Performs the given action on each element, providing sequential index with the element.
             %
-            %   Parameters:
-            %       action: Function that takes the index of an element and the element itself and performs the desired action on the element.
+            % Parameters:
+            % 	action: Function that takes the index of an element and the element itself and performs the desired action on the element.
             
             index = 1;
             iterator = obj.iterator();
@@ -161,8 +163,9 @@ classdef (Abstract) Collection < handle
         
         function all = all(obj, predicate)
             % all: logical = all(predicate: (Any) -> logical) : Returns true if all elements match the given predicate.
-            %   Parameters:
-            %       predicate: Function to match the given element.
+            %
+            % Parameters:
+            % 	predicate: Function to match the given element.
             
             all = true;
             iterator = obj.iterator();
@@ -178,8 +181,9 @@ classdef (Abstract) Collection < handle
             % none: logical = none() : Returns true if collection has no elements.
             %
             % none: logical = none(predicate: (Any) -> logical) : Returns true if no element matches the given predicate.
-            %   Parameters:
-            %       predicate: Function to match the given element.
+            %
+            % Parameters:
+            % 	predicate: Function to match the given element.
             
             if nargin == 1
                 none = obj.isEmpty();
@@ -992,25 +996,37 @@ classdef (Abstract) Collection < handle
             
         end
         
-        
-        
         function list = toList(obj)
+            % list: MXtension.Collections.List = toList() : Returns a read-only list containing the elements returned by this enumeration in the order
+            % they are returned by the enumeration.
+            
             list = MXtension.Collections.ImmutableList.fromCollection(obj);
         end
         
         function list = toMutableList(obj)
+            % list: MXtension.Collections.MutableList = toMutableList() : Returns a MutableList filled with all elements of this collection.
+            
             list = MXtension.Collections.ArrayList.fromCollection(obj);
         end
         
         function set = toSet(obj)
+            % set: MXtension.Collections.Set = toSet() : Returns a Set of all elements.
+            % The returned set preserves the element iteration order of the original collection.
+            
             set = MXtension.Collections.ImmutableSet.fromCollection(obj);
         end
         
         function set = toMutableSet(obj)
+            % set: MXtension.Collections.MutableSet = toMutableSet() : Returns a mutable set containing all distinct elements from the given collection.
+            % The returned set preserves the element iteration order of the original collection.
+            
             set = MXtension.Collections.ArraySet.fromCollection(obj);
         end
         
         function cellArray = toCellArray(obj)
+            % cellArray: cell-array = toCellArray() : Returns a cell-array with the dimension of 1xN, where N is the size of this collection, 
+            % filled with all elements of this collection.
+            
             cellArray = obj.toList().toCellArray();
         end
         

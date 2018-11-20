@@ -21,7 +21,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         end
     end
     
-    methods(Access = protected, Sealed)
+    methods(Access = protected)
         function collection = fromCollection(obj, collection) %#ok<INUSD>
             collection = eval([obj.classUnderTest(), '.fromCollection(collection);']);
         end
@@ -30,10 +30,22 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             collection = eval([obj.classUnderTest(), '.ofElements(varargin{:});']);
         end
         
+        function mustBeIterator(obj, iterator)
+            obj.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.Iterator'));
+            obj.assertFalse(isa(iterator, 'MXtension.Collections.Iterators.MutableIterator'));
+        end
+        
+        function mustBeCellArray(obj, cellArray)
+            obj.assertTrue(iscell(cellArray));
+        end
         
         function mustBeList(obj, list)
             obj.assertTrue(isa(list, 'MXtension.Collections.List'));
             obj.assertFalse(isa(list, 'MXtension.Collections.MutableList'));
+        end
+        
+        function mustBeMutableList(obj, list)
+            obj.assertTrue(isa(list, 'MXtension.Collections.MutableList'));
         end
         
         function mustBeSet(obj, set)
@@ -41,13 +53,27 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             obj.assertFalse(isa(set, 'MXtension.Collections.MutableSet'));
         end
         
-        function mustBeMap(obj, list)
-            obj.assertTrue(isa(list, 'MXtension.Collections.Map'));
-            obj.assertFalse(isa(list, 'MXtension.Collections.MutableMap'));
+        function mustBeMutableSet(obj, set)
+            obj.assertTrue(isa(set, 'MXtension.Collections.MutableSet'));
+        end
+        
+        function mustBeMap(obj, map)
+            obj.assertTrue(isa(map, 'MXtension.Collections.Map'));
+            obj.assertFalse(isa(map, 'MXtension.Collections.MutableMap'));
         end
         
         function mustBePair(obj, pair)
             obj.assertTrue(isa(pair, 'MXtension.Pair'));
+        end
+        
+        function mustThrowException(obj, toExecute, identifier, message)
+            try
+                toExecute();
+                obj.verifyFail();
+            catch ex
+                obj.assertEqual(ex.identifier, identifier);
+                obj.assertEqual(ex.message, message);
+            end
         end
         
         function constructorBaseTest(testCase, oneToThree, abc, emptyCollection, varargin)
@@ -80,6 +106,37 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             collection = testCase.fromCollection(emptyCollection);
             testCase.assertEqual(collection.size(), 0);
         end
+        
+        function checkIteratorsNextElement(testCase, iterator, expected)
+            testCase.assertTrue(iterator.hasNext());
+            element = iterator.next();
+            testCase.assertEqual(element, expected);
+        end
+        
+        function checkIteratorOfCollection(testCase, iterator, elements)
+            for i = 1:numel(elements)
+                testCase.checkIteratorsNextElement(iterator, elements{i});
+            end
+            testCase.assertFalse(iterator.hasNext());
+            testCase.mustThrowException(@() iterator.next(), 'MXtension:NoSuchElementException', 'The requested element cannot be found.');
+        end
+        
+        function checkIndexedIteratorsNextElement(testCase, iterator, expected, index)
+            testCase.assertTrue(iterator.hasNext());
+            element = iterator.next();
+            testCase.assertTrue(isa(element, 'MXtension.Collections.Iterators.IndexedValue'));
+            testCase.assertEqual(element.Index, index);
+            testCase.assertEqual(element.Value, expected);
+        end
+        
+        function checkIndexedIteratorOfCollection(testCase, iterator, elements)
+            for i = 1:numel(elements)
+                testCase.checkIndexedIteratorsNextElement(iterator, elements{i}, i);
+            end
+            testCase.assertFalse(iterator.hasNext());
+            testCase.mustThrowException(@() iterator.next(), 'MXtension:NoSuchElementException', 'The requested element cannot be found.');
+        end
+        
     end
     
     methods(Test)
@@ -102,7 +159,6 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         
         function test_construct_with_fromCollection_JavaSet(testCase)
             testCase.constructorBaseTest(testCase.javaSetOf(1, 2, 3), testCase.javaSetOf('a', 'b', 'c'), testCase.javaSetOf(), false);
-            
         end
         
         function test_construct_with_ofElements(testCase)
@@ -118,7 +174,48 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             end
         end
         
-        % TODO: withIndex
+        function test_iterator_of_empty_collection(testCase)
+            iterator = testCase.ofElements().iterator();
+            testCase.mustBeIterator(iterator);
+            testCase.checkIteratorOfCollection(iterator, {});
+        end
+        
+        function test_iterator_of_singleton_collection(testCase)
+            iterator = testCase.ofElements('a').iterator();
+            testCase.mustBeIterator(iterator);
+            testCase.checkIteratorOfCollection(iterator, {'a'});
+        end
+        
+        function test_iterator_of_collection_with_multiple_elements(testCase)
+            iterator = testCase.ofElements('a', 1, 'dog').iterator();
+            testCase.mustBeIterator(iterator);
+            testCase.checkIteratorOfCollection(iterator, {'a', 1, 'dog'});
+        end
+        
+        function test_withIndex_on_empty_collection(testCase)
+            indexedCollection = testCase.ofElements().withIndex();
+            testCase.assertTrue(isa(indexedCollection, 'MXtension.Collections.IndexedCollection'));
+            iterator = indexedCollection.iterator();
+            testCase.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.IndexedIterator'));
+            testCase.checkIndexedIteratorOfCollection(iterator, {});
+        end
+        
+        function test_withIndex_on_singleton_collection(testCase)
+            indexedCollection = testCase.ofElements('a').withIndex();
+            testCase.assertTrue(isa(indexedCollection, 'MXtension.Collections.IndexedCollection'));
+            iterator = indexedCollection.iterator();
+            testCase.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.IndexedIterator'));
+            testCase.checkIndexedIteratorOfCollection(iterator, {'a'});
+        end
+        
+        function test_withIndex_on_colletion_with_multiple_elements(testCase)
+            indexedCollection = testCase.ofElements('a', 1, 'dog').withIndex();
+            testCase.assertTrue(isa(indexedCollection, 'MXtension.Collections.IndexedCollection'));
+            iterator = indexedCollection.iterator();
+            testCase.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.IndexedIterator'));
+            testCase.checkIndexedIteratorOfCollection(iterator, {'a', 1, 'dog'});
+        end
+        
         
         function test_forEach(testCase)
             calls = {};
@@ -1100,7 +1197,83 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.get(2), 1);
         end
         
+        % TODO: joinToChar
         
+        function test_toList_on_empty_collection(testCase)
+            list = testCase.ofElements().toList();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function test_toList_on_collection(testCase)
+            list = testCase.ofElements('a', 1, 'dog').toList();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            testCase.assertEqual(list.get(1), 'a');
+            testCase.assertEqual(list.get(2), 1);
+            testCase.assertEqual(list.get(3), 'dog');
+        end
+        
+        function test_toMutableList_on_empty_collection(testCase)
+            list = testCase.ofElements().toMutableList();
+            testCase.mustBeMutableList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function test_toMutableList_on_collection(testCase)
+            list = testCase.ofElements('a', 1, 'dog').toMutableList();
+            testCase.mustBeMutableList(list);
+            testCase.assertEqual(list.size(), 3);
+            testCase.assertEqual(list.get(1), 'a');
+            testCase.assertEqual(list.get(2), 1);
+            testCase.assertEqual(list.get(3), 'dog');
+        end
+        
+        function test_toSet_on_empty_collection(testCase)
+            set = testCase.ofElements().toSet();
+            testCase.mustBeSet(set);
+            testCase.assertEqual(set.size(), 0);
+        end
+        
+        function test_toSet_on_collection(testCase)
+            set = testCase.ofElements('a', 1, 'dog').toSet();
+            testCase.mustBeSet(set);
+            testCase.assertEqual(set.size(), 3);
+            testCase.assertTrue(set.contains('a'));
+            testCase.assertTrue(set.contains(1));
+            testCase.assertTrue(set.contains('dog'));
+        end
+        
+        function test_toMutableSet_on_empty_collection(testCase)
+            set = testCase.ofElements().toMutableSet();
+            testCase.mustBeMutableSet(set);
+            testCase.assertEqual(set.size(), 0);
+        end
+        
+        function test_toMutableSet_on_collection(testCase)
+            set = testCase.ofElements('a', 1, 'dog').toMutableSet();
+            testCase.mustBeMutableSet(set);
+            testCase.assertEqual(set.size(), 3);
+            testCase.assertTrue(set.contains('a'));
+            testCase.assertTrue(set.contains(1));
+            testCase.assertTrue(set.contains('dog'));
+        end
+        
+        function test_toCellArray_on_empty_collection(testCase)
+            cellArray = testCase.ofElements().toCellArray();
+            testCase.mustBeCellArray(cellArray);
+            testCase.assertEqual(numel(cellArray), 0);
+        end
+        
+        function test_toCellArray_on_collection(testCase)
+            cellArray = testCase.ofElements('a', 1, 'dog').toCellArray();
+            testCase.mustBeCellArray(cellArray);
+            testCase.assertEqual(size(cellArray), [1, 3]);
+            
+            testCase.assertEqual(cellArray{1}, 'a');
+            testCase.assertEqual(cellArray{2}, 1);
+            testCase.assertEqual(cellArray{3}, 'dog');
+        end
     end
     
 end
