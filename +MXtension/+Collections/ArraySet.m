@@ -46,14 +46,11 @@ classdef ArraySet < MXtension.Collections.MutableSet
         end
         
     end
-    
-    %% List interface
+
     methods
         
         function changed = add(obj, element)
-            % changed: logical = add(element: Any): Adds the specified element to the collection.
-            % Return if the list was changed as the result of the operation.
-            % TODO: throws indexoutofbounds
+
             changed = false;
             if obj.BackingList.indexOf(element) < 0
                 changed = true;
@@ -93,7 +90,7 @@ classdef ArraySet < MXtension.Collections.MutableSet
         % TODO: removeRange
         
         function clear(obj)
-            % list.clear(): Removes all elements from this list.
+            % clear() : Removes all elements from this set.
             
             obj.BackingList.clear();
         end

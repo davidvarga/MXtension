@@ -87,19 +87,14 @@ classdef ArrayList < MXtension.Collections.MutableList
         
         
         function size = size(obj)
-            % size: double = list.size(): Returns the number of elements in this list.
             size = numel(obj.CellArray);
         end
         
         function changed = add(obj, element)
-            % changed: logical = add(element: Any): Adds the specified element to the collection.
-            % Return if the list was changed as the result of the operation.
-            % TODO: throws indexoutofbounds
             
             
             obj.CellArray{end+1} = element;
             changed = true;
-            
         end
         
         function changed = insert(obj, index, element)
@@ -115,7 +110,6 @@ classdef ArrayList < MXtension.Collections.MutableList
         function changed = addAll(obj, collection)
             % wasAdded: logical = addAll(collection: <Collection type valid for fromCollection factory>): Adds all of the elements in the specified collection elements into the end of this list.
             % Return if the list was changed as the result of the operation.
-            % TODO: throws indexoutofbounds
             
             index = obj.size() + 1;
             changed = obj.insertAll(index, collection);
@@ -160,7 +154,7 @@ classdef ArrayList < MXtension.Collections.MutableList
         end
         
         function isRemoved = remove(obj, element)
-            % isRemoved: logical = list.remove(element: Any): Removes the first occurence of the specified element if found. Returns if a matching element was removed.
+          
             
             index = obj.indexOfFirst(@(it) MXtension.equals(it, element));
             if index < 0
@@ -174,7 +168,7 @@ classdef ArrayList < MXtension.Collections.MutableList
         % TODO: removeRange
         
         function clear(obj)
-            % list.clear(): Removes all elements from this list.
+          
             
             obj.CellArray = {};
         end

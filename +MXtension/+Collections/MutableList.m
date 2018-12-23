@@ -1,8 +1,9 @@
 classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXtension.Collections.List
-    %UNTITLED8 Summary of this class goes here
-    %   Detailed explanation goes here
+
     methods(Abstract)
-%         list = ofSize(size, varargin)
+        % true = add(element: Any) - Adds the specified element to the end of this list. Returns true as this operation always changes the list.
+        modified = add(obj, element)
+
         modified = insert(obj, index, elem)
         modified = insertAll(obj, index, collection)
         previous = set(obj, index, element)

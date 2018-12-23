@@ -8,15 +8,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
 
     methods (Test)
          
-        function test_add(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements();
-            list.add('newelement');
-            testCase.verifyEqual(list.size(), 1);
-            testCase.verifyEqual(list.get(1), 'newelement');
-            list.add(123);
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(2), 123);
-        end
+        
         
         function test_insert(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 3);
@@ -30,32 +22,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
             testCase.verifyEqual(list.size(), 6);
             testCase.verifyEqual(list.get(5), 999);
         end
-        
-        function test_addAll(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements();
-            list.addAll({'newelement1', 'newelement2'});
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(1), 'newelement1');
-            testCase.verifyEqual(list.get(2), 'newelement2');
-            list.addAll(MXtension.Collections.ArrayList.fromCollection({1, 2}));
-            testCase.verifyEqual(list.size(), 4);
-            testCase.verifyEqual(list.get(1), 'newelement1');
-            testCase.verifyEqual(list.get(2), 'newelement2');
-            testCase.verifyEqual(list.get(3), 1);
-            testCase.verifyEqual(list.get(4), 2);
-            javaList = java.util.ArrayList();
-            javaList.add('a');
-            javaList.add('b');
-            list.addAll(javaList);
-            testCase.verifyEqual(list.size(), 6);
-            testCase.verifyEqual(list.get(1), 'newelement1');
-            testCase.verifyEqual(list.get(2), 'newelement2');
-            testCase.verifyEqual(list.get(3), 1);
-            testCase.verifyEqual(list.get(4), 2);
-            testCase.verifyEqual(list.get(5), 'a');
-            testCase.verifyEqual(list.get(6), 'b');
-        end
-        
+  
         function test_insertAll(testCase)      
             list = MXtension.Collections.ArrayList.ofElements('orig1', 'orig2');
             list.insertAll(1, {'newelement1', 'newelement2'});
@@ -135,135 +102,6 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
             % TODO: Test Exception
         end
         
-        function test_remove(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 4);
-            % Remove in the middle
-            removed = list.remove(2);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Try to remove not existing
-            removed = list.remove(6);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 4);
-            testCase.verifyEqual(removed, false);
-            
-            % Remove on first index
-            removed = list.remove(1);
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(1), 2);
-            testCase.verifyEqual(list.get(2), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last index
-            removed = list.remove(4);
-            testCase.verifyEqual(list.size(), 1);
-            testCase.verifyEqual(list.get(1), 2);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last element in the list
-            removed = list.remove(2);
-            testCase.verifyEqual(list.size(), 0);
-            testCase.verifyEqual(removed, true);
-        end
-        
-        function test_removeAll_with_Collection(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
-            
-            % Try to remove not existing
-            removed = list.removeAll({0});
-            testCase.verifyEqual(list.size(), 5);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 2);
-            testCase.verifyEqual(list.get(4), 3);
-            testCase.verifyEqual(list.get(5), 4);
-            testCase.verifyEqual(removed, false);
-            
-            % Remove in the middle
-            removed = list.removeAll({2});
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 3);
-            testCase.verifyEqual(list.get(3), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on first index
-            removed = list.removeAll({1});
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(1), 3);
-            testCase.verifyEqual(list.get(2), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last index
-            removed = list.removeAll({4});
-            testCase.verifyEqual(list.size(), 1);
-            testCase.verifyEqual(list.get(1), 3);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last element in the list
-            removed = list.removeAll({3});
-            testCase.verifyEqual(list.size(), 0);
-            testCase.verifyEqual(removed, true);
-        end
-        
-        function test_removeAll_with_Predicate(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
-            
-            % Try to remove not existing
-            removed = list.removeAll(@(e) e > 4);
-            testCase.verifyEqual(list.size(), 5);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 2);
-            testCase.verifyEqual(list.get(3), 2);
-            testCase.verifyEqual(list.get(4), 3);
-            testCase.verifyEqual(list.get(5), 4);
-            testCase.verifyEqual(removed, false);
-            
-            % Remove in the middle
-            removed = list.removeAll(@(e) e == 2);
-            testCase.verifyEqual(list.size(), 3);
-            testCase.verifyEqual(list.get(1), 1);
-            testCase.verifyEqual(list.get(2), 3);
-            testCase.verifyEqual(list.get(3), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on first index
-            removed = list.removeAll(@(e) e == 1);
-            testCase.verifyEqual(list.size(), 2);
-            testCase.verifyEqual(list.get(1), 3);
-            testCase.verifyEqual(list.get(2), 4);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last index
-            removed = list.removeAll(@(e) mod(e,2) == 0);
-            testCase.verifyEqual(list.size(), 1);
-            testCase.verifyEqual(list.get(1), 3);
-            testCase.verifyEqual(removed, true);
-            
-            % Remove on last element in the list
-            removed = list.removeAll(@(e) mod(e,2) == 1);
-            testCase.verifyEqual(list.size(), 0);
-            testCase.verifyEqual(removed, true);
-        end
-        
-        % TODO: retainsAll_with_collection
-        
-        % TODO: retainsAll_with_predicate
-        
-        function test_clear(testCase)      
-            list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
-            list.clear();
-            testCase.verifyEqual(list.size(), 0);
-            list.clear();
-            testCase.verifyEqual(list.size(), 0);
-            
-        end
       
         
         %% 
