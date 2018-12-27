@@ -7,18 +7,7 @@ classdef (Abstract) MutableCollectionTest < CollectionTest & matlab.unittest.Tes
             obj.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.MutableIterator'));
         end
         
-        function assertElementsFromOneUntil(obj, collection, until)
-            obj.assertElementsFromOneUntilWithOffset(collection, until, 1);
-            
-        end
-        
-        function assertElementsFromOneUntilWithOffset(obj, collection, until, offset)
-            obj.assertEqual(collection.size(), until);
-            iterator = collection.iterator();
-            for i = 1:until
-                obj.assertEqual(iterator.next(), i+offset-1);
-            end
-        end
+
     end
     
     methods(Test)

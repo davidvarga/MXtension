@@ -468,8 +468,8 @@ classdef (Abstract) Collection < handle
             list = obj.filter(@(elem) ~isempty(elem));
         end
         
-        function list = filterIsTypeOf(obj, type)
-            % list: MXtension.Collections.List = filterIsTypeOf(type: char) : Returns a list containing all elements that are istances of the given type.
+        function list = filterIsInstanceOf(obj, type)
+            % list: MXtension.Collections.List = filterIsInstanceOf(type: char) : Returns a list containing all elements that are istances of the given type.
             
             list = obj.filter(@(elem) isa(elem, type));
         end
@@ -497,8 +497,11 @@ classdef (Abstract) Collection < handle
         
         function list = take(obj, n)
             % list: MXtension.Collections.List = take(n: double) : Returns a list containing first n elements if possible.
-            
-            % TODO: Require n >= 0
+            % Throws MXtension:IllegalArgumentException if the passed argument is smaller than zero or not a number.
+
+            if ~isnumeric(n) || n < 0
+                throw(MException('MXtension:IllegalArgumentException', 'The requested element count is less than zero.'));
+            end
             
             if n == 0
                 list = MXtension.emptyList();
@@ -557,6 +560,12 @@ classdef (Abstract) Collection < handle
         
         function list = drop(obj, n)
             % list: MXtension.Collections.List = drop(n: double) : Returns a list containing all elements except first n elements.
+            % Throws MXtension:IllegalArgumentException if the passed argument is smaller than zero or not a number.
+            
+            if ~isnumeric(n) || n < 0
+                throw(MException('MXtension:IllegalArgumentException', 'The requested element count is less than zero.'));
+            end
+            
             count = obj.count();
             if n > count
                 list = MXtension.emptyList();
@@ -581,6 +590,7 @@ classdef (Abstract) Collection < handle
         
         function list = dropWhile(obj, predicate)
             % list: MXtension.Collections.List = dropWhile(predicate: (Any) -> logial) : Returns a list containing all elements except first elements that satisfy the given predicate.
+            
             yielding = false;
             
             iterator = obj.iterator();
@@ -746,9 +756,10 @@ classdef (Abstract) Collection < handle
         end
         
         function set = intersect(obj, collection)
-            % set: MXtension.Collections.Set = intersect(iterable: MXtension.Collections.Collection) : Returns a set containing all elements that are
+            % set: MXtension.Collections.Set = intersect(collection: <Collection type valid for fromCollection factory>) : Returns a set containing all elements that are
             % contained by both this set and the specified collection.
             % The returned set preserves the element iteration order of the original collection.
+            % The equality check is performed using MXtension.equals().
             
             mutableSet = obj.toMutableSet();
             mutableSet.retainAll(collection);
@@ -758,7 +769,7 @@ classdef (Abstract) Collection < handle
         function list = distinct(obj)
             % list: list: MXtension.Collections.List = distinct() : Returns a list containing only distinct elements from the given collection.
             % The elements in the resulting list are in the same order as they were in the source collection.
-            % The equality is performed usinf MXtension.equals().
+            % The equality check is performed using MXtension.equals().
             
             list = obj.toSet().toList();
         end
@@ -789,18 +800,18 @@ classdef (Abstract) Collection < handle
         end
         
         function listOfPairs = zip(obj, otherCollection, varargin)
-            % listOfPairs: MXtension.Colllections.List<MXtension.Pair> = zip(obj, otherCollection: MXtension.Collections.Collection) : Returns a list 
+            % listOfPairs: MXtension.Colllections.List<MXtension.Pair> = zip(otherCollection: <Collection type valid for fromCollection factory>) : Returns a list 
             % of pairs built from the elements of this collection and other collection with the same index.
             % The returned list has length of the shortest collection and each element is an MXtension.Pair instance, where the element in the First 
             % property is the element from the first collection and the element in the Second property is the element from the second collection.
             %
-            % list: MXtension.Colllections.List = zip(obj, otherCollection: MXtension.Collections.Collection, transform: (Any, Any) -> Any) : 
+            % list: MXtension.Colllections.List = zip(otherCollection: <Collection type valid for fromCollection factory>, transform: (Any, Any) -> Any) : 
             % Returns a list of values built from the elements of this collection and the other collection with the same index using the provided transform function 
             % applied to each pair of elements.
             % The returned list has length of the shortest collection.
             %
             % Parameters:
-            %   otherCollection - any MXtension.Collection.Collection instance
+            %   otherCollection - any collection type valid for fromCollection factory
             %   transform - function that takes the current element from the first collection and the element on the same index from the other
             %   collection and produces the value in the zipped collection.
 
@@ -809,6 +820,8 @@ classdef (Abstract) Collection < handle
             else
                 transform = varargin{1};
             end
+            
+            otherCollection = obj.fromCollection(otherCollection);
             
             firstIterator = obj.iterator();
             otherIterator = otherCollection.iterator();

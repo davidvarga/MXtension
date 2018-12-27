@@ -21,8 +21,15 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         end
         
         function collections = allKindsOfCollectionsOf(varargin)
-            collections = {CollectionTest.javaSetOf(varargin{:}), ...
-                CollectionTest.javaListOf(varargin{:}), ...
+            mlCollections = CollectionTest.matlabCollectionsOf(varargin{:});
+            % CollectionTest.javaSetOf(varargin{:}
+            javaCollections = {CollectionTest.javaListOf(varargin{:})};
+            
+            collections = [mlCollections, javaCollections];
+        end
+        
+        function collections = matlabCollectionsOf(varargin)
+            collections = {; ...
                 MXtension.listOf(varargin{:}), ...
                 MXtension.mutableListOf(varargin{:}), ...
                 MXtension.setOf(varargin{:}), ...
@@ -147,6 +154,19 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.mustThrowException(@() iterator.next(), 'MXtension:NoSuchElementException', 'The requested element cannot be found.');
         end
         
+        function assertElementsFromOneUntil(obj, collection, until)
+            obj.assertElementsFromOneUntilWithOffset(collection, until, 1);
+            
+        end
+        
+        function assertElementsFromOneUntilWithOffset(obj, collection, until, offset)
+            obj.assertEqual(collection.size(), until);
+            iterator = collection.iterator();
+            for i = 1:until
+                obj.assertEqual(iterator.next(), i+offset-1);
+            end
+        end
+        
     end
     
     methods(Test)
@@ -171,11 +191,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.constructorBaseTest(testCase.javaSetOf(1, 2, 3), testCase.javaSetOf('a', 'b', 'c'), testCase.javaSetOf(), false);
         end
         
-        function construct_with_ofElements(testCase)
-            testCase.constructorBaseTest(testCase.ofElements(1, 2, 3), testCase.ofElements('a', 'b', 'c'), testCase.ofElements());
-        end
-        
-        function construct_with_invalidCollectionType(testCase)
+        function construct_with_fromCollection_invalidCollectionType(testCase)
             try
                 testCase.fromCollection([1, 2, 3]);
             catch ex
@@ -183,6 +199,12 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(ex.message, 'The passed collection type is not supported.');
             end
         end
+        
+        
+        function construct_with_ofElements(testCase)
+            testCase.constructorBaseTest(testCase.ofElements(1, 2, 3), testCase.ofElements('a', 'b', 'c'), testCase.ofElements());
+        end
+        
         
         function iterator_of_empty_collection(testCase)
             iterator = testCase.ofElements().iterator();
@@ -201,6 +223,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.mustBeIterator(iterator);
             testCase.checkIteratorOfCollection(iterator, {'a', 1, 'dog'});
         end
+        
         
         function withIndex_on_empty_collection(testCase)
             indexedCollection = testCase.ofElements().withIndex();
@@ -225,6 +248,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.IndexedIterator'));
             testCase.checkIndexedIteratorOfCollection(iterator, {'a', 1, 'dog'});
         end
+        
         
         function forEach_on_empty_collection(testCase)
             calls = {};
@@ -254,6 +278,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(calls{i}, i);
             end
         end
+        
         
         function forEachIndexed_on_empty_collection(testCase)
             calls = {};
@@ -286,6 +311,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             end
         end
         
+        
         function contains_called_on_empty_collection(testCase)
             collection = testCase.ofElements();
             
@@ -300,6 +326,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(collection.contains(3), true);
             testCase.assertEqual(collection.contains(''), false);
         end
+        
         
         function containsAll_called_on_empty_collection(testCase)
             collection = testCase.ofElements();
@@ -345,6 +372,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             end
         end
         
+        
         function size_of_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().size(), 0);
         end
@@ -353,6 +381,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).size(), 5);
             testCase.assertEqual(testCase.ofElements(1).size(), 1);
         end
+        
         
         function count_without_parameter_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().count(), 0);
@@ -381,13 +410,14 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3, 4, 5).count(@(x) x < 1), 0);
         end
         
+        
         function any_without_argument_on_empty_collection(testCase)
             testCase.assertFalse(testCase.ofElements().any());
         end
         
         function any_without_argument_on_non_empty_collection(testCase)
             testCase.assertTrue(testCase.ofElements(1).any());
-            testCase.assertTrue(testCase.ofElements(1,2,3).any());
+            testCase.assertTrue(testCase.ofElements(1, 2, 3).any());
         end
         
         function any_with_predicate_on_empty_collection(testCase)
@@ -400,6 +430,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(testCase.ofElements(1, 2, 3, 4, 5).any(@(x) x > 2 && x < 4));
             testCase.assertFalse(testCase.ofElements(1, 2, 3, 4, 5).any(@(x) x < 1));
         end
+        
         
         function all_on_empty_collection(testCase)
             testCase.assertTrue(testCase.ofElements().all(@(x) false));
@@ -418,6 +449,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertFalse(testCase.ofElements(1, 2, 3, 4, 5).all(@(x) x < 1));
             testCase.assertTrue(testCase.ofElements(1, 2, 3, 4, 5).all(@(x) x >= 1 && x <= 5));
         end
+        
         
         function none_without_argument_on_empty_collection(testCase)
             testCase.assertTrue(testCase.ofElements().none());
@@ -443,6 +475,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertFalse(testCase.ofElements(1, 2, 3, 4, 5).none(@(x) x >= 1 && x <= 5));
         end
         
+        
         function isEmpty_on_empty_collection(testCase)
             testCase.assertTrue(testCase.ofElements().isEmpty());
         end
@@ -452,6 +485,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertFalse(testCase.ofElements('a', 'b').isEmpty());
         end
         
+        
         function isNotEmpty_on_empty_collection(testCase)
             testCase.assertFalse(testCase.ofElements().isNotEmpty());
         end
@@ -460,6 +494,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(testCase.ofElements(1).isNotEmpty());
             testCase.assertTrue(testCase.ofElements('a', 'b').isNotEmpty());
         end
+        
         
         function first_without_argument_on_empty_collection(testCase)
             try
@@ -498,6 +533,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             end
         end
         
+        
         function firstOrNull_without_argument_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().firstOrNull(), []);
         end
@@ -517,6 +553,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements('a', 'b').firstOrNull(@(x) strcmp(x, 'a')), 'a');
             testCase.assertEqual(testCase.ofElements(1, 2, 3).firstOrNull(@(x) x > 3), []);
         end
+        
         
         function last_without_argument_on_empty_collection(testCase)
             try
@@ -547,7 +584,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3).last(@(x) x > 1), 3);
             testCase.assertEqual(testCase.ofElements(1, 2, 3).last(@(x) x < 2), 1);
             testCase.assertEqual(testCase.ofElements('a', 'b').last(@(x) strcmp(x, 'a')), 'a');
-           
+            
             try
                 testCase.ofElements(1, 2, 3).last(@(x) x > 3);
                 testCase.verifyFail();
@@ -556,6 +593,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(ex.message, 'No element matches the given predicate.');
             end
         end
+        
         
         function lastOrNull_without_argument_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().lastOrNull(), []);
@@ -579,6 +617,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3).lastOrNull(@(x) x > 3), []);
         end
         
+        
         function find_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().find(@(x) true), []);
             testCase.assertEqual(testCase.ofElements().find(@(x) false), []);
@@ -590,9 +629,10 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3).find(@(x) x > 3), []);
         end
         
+        
         function findLast_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().findLast(@(x) true), []);
-             testCase.assertEqual(testCase.ofElements().findLast(@(x) false), []);
+            testCase.assertEqual(testCase.ofElements().findLast(@(x) false), []);
         end
         
         function findLast_on_non_empty_collection(testCase)
@@ -601,6 +641,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements('a', 'b').findLast(@(x) strcmp(x, 'a')), 'a');
             testCase.assertEqual(testCase.ofElements(1, 2, 3).findLast(@(x) x > 3), []);
         end
+        
         
         function indexOfFirst_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().indexOfFirst(@(x) true), -1);
@@ -613,6 +654,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfFirst(@(x) x > 3), -1);
         end
         
+        
         function indexOfLast_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().indexOfLast(@(x) true), -1);
         end
@@ -624,6 +666,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(testCase.ofElements('a', 'b').indexOfLast(@(x) strcmp(x, 'a')), 1);
             testCase.assertEqual(testCase.ofElements(1, 2, 3).indexOfLast(@(x) x > 3), -1);
         end
+        
         
         function indexOf_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().indexOf(1), -1);
@@ -647,7 +690,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(collection.indexOf(3), 4);
         end
         
-        function test_lastIndexOf(testCase)
+        
+        function lastIndexOf_on_empty_collection(testCase)
+            testCase.assertEqual(testCase.ofElements().lastIndexOf(2), -1);
+            testCase.assertEqual(testCase.ofElements().lastIndexOf('a'), -1);
+        end
+        
+        function lastIndexOf_on_non_empty_collection(testCase)
             collection = testCase.ofElements(1, 2, 2, 3, 2, 3);
             testCase.assertEqual(collection.lastIndexOf(2), 5);
             testCase.assertEqual(collection.lastIndexOf(1), 1);
@@ -664,7 +713,27 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(collection.lastIndexOf('123'), -1);
         end
         
-        function test_elementAt(testCase)
+        
+        function elementAt_on_empty_collection(testCase)
+            collection = testCase.ofElements();
+            try
+                collection.elementAt(1);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 1');
+            end
+            
+            try
+                collection.elementAt(0);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 0');
+            end
+        end
+        
+        function elementAt_on_non_empty_collection(testCase)
             collection = testCase.ofElements(1, 2, 3, 4, 5);
             for i = 1:5
                 testCase.assertEqual(collection.elementAt(i), i);
@@ -676,20 +745,75 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
                 testCase.assertEqual(ex.message, 'The collection does not contain any element at index 6');
             end
+            
+            try
+                collection.elementAt(0);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 0');
+            end
         end
         
-        function test_elementAtOrElse(testCase)
+        
+        function elementAtOrElse_with_predicate_on_empty_collection(testCase)
+            collection = testCase.ofElements();
+            
+            testCase.assertEqual(collection.elementAtOrElse(0, @(ind) 'c'), 'c');
+            testCase.assertEqual(collection.elementAtOrElse(1, @(ind) 'a'), 'a');
+            testCase.assertEqual(collection.elementAtOrElse(-1, @(ind) 'b'), 'b');
+            
+            
+        end
+        
+        function elementAtOrElse_with_element_on_empty_collection(testCase)
+            collection = testCase.ofElements();
+            
+            testCase.assertEqual(collection.elementAtOrElse(0, 'c'), 'c');
+            testCase.assertEqual(collection.elementAtOrElse(1, 'a'), 'a');
+            testCase.assertEqual(collection.elementAtOrElse(-1, 'b'), 'b');
+            
+        end
+        
+        function elementAtOrElse_with_predicate_on_non_empty_collection(testCase)
             collection = testCase.ofElements(1, 2, 3, 4, 5);
             for i = 1:10
-                testCase.assertEqual(collection.elementAtOrElse(i, @(ind) ind), i);
+                if i < 6
+                    testCase.assertEqual(collection.elementAtOrElse(i, @(ind) 'a'), i);
+                else
+                    testCase.assertEqual(collection.elementAtOrElse(i, @(ind) 'a'), 'a');
+                end
             end
             
-            for i = 1:10
-                testCase.assertEqual(collection.elementAtOrElse(i, i), i);
-            end
+            testCase.assertEqual(collection.elementAtOrElse(0, @(ind) 'c'), 'c');
+            testCase.assertEqual(collection.elementAtOrElse(-1, @(ind) 'b'), 'b');
+            
         end
         
-        function test_elementAtOrNull(testCase)
+        function elementAtOrElse_with_element_on_non_empty_collection(testCase)
+            collection = testCase.ofElements(1, 2, 3, 4, 5);
+            for i = 1:10
+                if i < 6
+                    testCase.assertEqual(collection.elementAtOrElse(i, 'a'), i);
+                else
+                    testCase.assertEqual(collection.elementAtOrElse(i, 'a'), 'a');
+                end
+            end
+            
+            testCase.assertEqual(collection.elementAtOrElse(0, 'c'), 'c');
+            testCase.assertEqual(collection.elementAtOrElse(-1, 'b'), 'b');
+        end
+        
+        
+        function elementAtOrNull_on_empty_collection(testCase)
+            collection = testCase.ofElements();
+            
+            testCase.assertEqual(collection.elementAtOrNull(-1), []);
+            testCase.assertEqual(collection.elementAtOrNull(1), []);
+            testCase.assertEqual(collection.elementAtOrNull(0), []);
+        end
+        
+        function elementAtOrNull_on_non_empty_collection(testCase)
             collection = testCase.ofElements(1, 2, 3, 4, 5);
             for i = 1:5
                 testCase.assertEqual(collection.elementAtOrNull(i), i);
@@ -698,29 +822,81 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             for i = 6:10
                 testCase.assertEqual(collection.elementAtOrNull(i), []);
             end
+            testCase.assertEqual(collection.elementAtOrNull(-1), []);
+            testCase.assertEqual(collection.elementAtOrNull(0), []);
         end
         
-        function test_filter(testCase)
-            testCase.assertEqual(testCase.ofElements().filter(@(x) true).size(), 0);
+        
+        function filter_on_empty_collection(testCase)
+            list = testCase.ofElements().filter(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            list = testCase.ofElements().filter(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filter_with_always_true_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).filter(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+        end
+        
+        function filter_with_always_false_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).filter(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filter_with_partially_matching_predicate(testCase)
             list = testCase.ofElements(1, 2, 3, 4, 5).filter(@(x) mod(x, 2) == 0);
             testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            
             testCase.assertEqual(list.get(1), 2);
             testCase.assertEqual(list.get(2), 4);
-            testCase.assertEqual(list.size(), 2);
         end
         
-        function test_filterNot(testCase)
-            testCase.assertEqual(testCase.ofElements().filterNot(@(x) true).size(), 0);
-            list = testCase.ofElements(1, 2, 3, 4, 5).filterNot(@(x) mod(x, 2) == 0);
+        
+        function filterNot_on_empty_collection(testCase)
+            list = testCase.ofElements().filterNot(@(x) true);
             testCase.mustBeList(list);
-            testCase.assertEqual(list.get(1), 1);
-            testCase.assertEqual(list.get(2), 3);
-            testCase.assertEqual(list.get(3), 5);
-            testCase.assertEqual(list.size(), 3);
+            testCase.assertEqual(list.size(), 0);
+            list = testCase.ofElements().filterNot(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
         end
         
-        function test_filterNotNull(testCase)
-            testCase.assertEqual(testCase.ofElements().filterNotNull().size, 0);
+        function filterNot_with_always_true_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterNot(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filterNot_with_always_false_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterNot(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+        end
+        
+        function filterNot_with_partially_matching_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterNot(@(x) mod(x, 2) ~= 0);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 2);
+            
+            testCase.assertEqual(list.get(1), 2);
+            testCase.assertEqual(list.get(2), 4);
+        end
+        
+        
+        function filterNotNull_on_empty_collection(testCase)
+            list = testCase.ofElements().filterNotNull();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filterNotNull_on_non_empty_collection(testCase)
             list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterNotNull();
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 0);
@@ -731,8 +907,14 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.size(), 5);
         end
         
-        function test_filterNotEmpty(testCase)
-            testCase.assertEqual(testCase.ofElements().filterNotEmpty().size, 0);
+        
+        function filterNotEmpty_on_empty_collection(testCase)
+            list = testCase.ofElements().filterNotEmpty();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filterNotEmpty_on_non_empty_collection(testCase)
             list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterNotEmpty();
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 0);
@@ -742,22 +924,72 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.size(), 4);
         end
         
-        function test_filterIsTypeOf(testCase)
-            testCase.assertEqual(testCase.ofElements().filterIsTypeOf('char').size, 0);
-            list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterIsTypeOf('char');
+        
+        function filterIsInstanceOf_on_empty_collection(testCase)
+            list = testCase.ofElements().filterIsInstanceOf('char');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().filterIsInstanceOf('double');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().filterIsInstanceOf('TestDataClass');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().filterIsInstanceOf('TestHandleClass');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filterIsInstanceOf_on_non_empty_collection(testCase)
+            list = testCase.ofElements(0, 1, [], 3, [], 5, '').filterIsInstanceOf('char');
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), '');
             testCase.assertEqual(list.size(), 1);
-            list = testCase.ofElements(1, 2, 3, 4, 5).filterIsTypeOf('double');
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).filterIsInstanceOf('double');
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            tdc1 = TestDataClass();
+            tdc1.Property1 = '1';
+            tdc1.Property2 = '2';
+            
+            tdc2 = TestDataClass();
+            tdc2.Property1 = '3';
+            tdc2.Property2 = '4';
+            
+            thc1 = TestHandleClass();
+            thc1.PropertyA = 'A';
+            thc1.PropertyB = 'B';
+            
+            thc2 = TestHandleClass();
+            thc2.PropertyA = 'C';
+            thc2.PropertyB = 'D';
+            
+            list = testCase.ofElements(tdc1, thc1, tdc2, thc2).filterIsInstanceOf('TestDataClass');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.get(1), tdc1);
+            testCase.assertEqual(list.get(2), tdc2);
+            testCase.assertEqual(list.size(), 2);
+            
+            list = testCase.ofElements(tdc1, thc1, tdc2, thc2).filterIsInstanceOf('TestHandleClass');
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.get(1), thc1);
+            testCase.assertEqual(list.get(2), thc2);
+            testCase.assertEqual(list.size(), 2);
         end
         
-        function test_filterIndexed(testCase)
-            testCase.assertEqual(testCase.ofElements().filterIndexed(@(ind, x) true).size(), 0);
+        
+        function filterIndexed_on_empty_collection(testCase)
+            list = testCase.ofElements().filterIndexed(@(ind, x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function filterIndexed_on_non_empty_collection(testCase)
             list = testCase.ofElements('a', 'b', 'c', 'd', 'e').filterIndexed(@(ind, x) mod(ind, 2) == 0);
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 'b');
@@ -765,29 +997,113 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.size(), 2);
         end
         
-        function test_take(testCase)
-            testCase.assertEqual(testCase.ofElements().take(5).size(), 0);
-            testCase.assertEqual(testCase.ofElements(1).take(0).size(), 0);
-            testCase.assertEqual(testCase.ofElements().take(0).size(), 0);
-            % TODO: error if take(-1)
+        
+        function take_on_empty_collection(testCase)
+            list = testCase.ofElements().take(0);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().take(1);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function take_with_illegal_argument(testCase)
+            
+            try
+                testCase.ofElements().take(-1);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).take(-1);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).take('a');
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).take(TestDataClass());
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+        end
+        
+        function take_inside_of_the_collection_size(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).take(0);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).take(3);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 3);
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).take(5);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
             
             list = testCase.ofElements('a', 'b', 'c', 'd', 'e').take(2);
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 'a');
             testCase.assertEqual(list.get(2), 'b');
             testCase.assertEqual(list.size(), 2);
+        end
+        
+        function take_outside_of_the_collection_size(testCase)
             
-            list = testCase.ofElements(1, 2, 3, 4, 5).take(6);
+            list = testCase.ofElements(1, 2, 3, 4, 5).take(7);
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements('a', 'b', 'c', 'd', 'e').take(100);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.get(1), 'a');
+            testCase.assertEqual(list.get(2), 'b');
+            testCase.assertEqual(list.get(3), 'c');
+            testCase.assertEqual(list.get(4), 'd');
+            testCase.assertEqual(list.get(5), 'e');
             testCase.assertEqual(list.size(), 5);
         end
         
-        function test_takeWhile(testCase)
-            testCase.assertEqual(testCase.ofElements().takeWhile(@(x) true).size(), 0);
-            testCase.assertEqual(testCase.ofElements(1).takeWhile(@(x) false).size(), 0);
+        
+        function takeWhile_on_empty_collection(testCase)
+            list = testCase.ofElements().takeWhile(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().takeWhile(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function takeWhile_with_always_true_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).takeWhile(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+        end
+        
+        function takeWhile_with_always_false_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).takeWhile(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function takeWhile_with_partially_matching_predicate(testCase)
             
             list = testCase.ofElements('a', 'b', 'c', 'd', 'e').takeWhile(@(x) ~strcmp(x, 'c'));
             testCase.mustBeList(list);
@@ -797,36 +1113,108 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             
             list = testCase.ofElements(1, 2, 3, 4, 5).takeWhile(@(x) isnumeric(x));
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
         end
         
-        function test_drop(testCase)
-            testCase.assertEqual(testCase.ofElements().drop(0).size(), 0);
-            testCase.assertEqual(testCase.ofElements(1).drop(1).size(), 0);
-            testCase.assertEqual(testCase.ofElements(1).drop(2).size(), 0);
+        
+        function drop_on_empty_collection(testCase)
+            list = testCase.ofElements().drop(0);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
             
-            % TODO: drop(-1)
+            list = testCase.ofElements().drop(1);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            
+        end
+        
+        function drop_with_illegal_argument(testCase)
+            
+            try
+                testCase.ofElements().drop(-1);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).drop(-1);
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).drop('a');
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+            try
+                testCase.ofElements(1, 2, 3).drop(TestDataClass());
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalArgumentException');
+                testCase.assertEqual(ex.message, 'The requested element count is less than zero.');
+            end
+            
+        end
+        
+        function drop_inside_the_collection_size(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).drop(0);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).drop(1);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntilWithOffset(list, 4, 2);
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).drop(5);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
             
             list = testCase.ofElements('a', 'b', 'c', 'd', 'e').drop(3);
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 'd');
             testCase.assertEqual(list.get(2), 'e');
             testCase.assertEqual(list.size(), 2);
-            
-            list = testCase.ofElements(1, 2, 3, 4, 5).drop(0);
-            testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
         end
         
-        function test_dropWhile(testCase)
-            testCase.assertEqual(testCase.ofElements().dropWhile(@(x) false).size(), 0);
-            testCase.assertEqual(testCase.ofElements(1).dropWhile(@(x) true).size(), 0);
+        function drop_outside_the_collection_size(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).drop(6);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        
+        function dropWhile_on_empty_collection(testCase)
+            list = testCase.ofElements().dropWhile(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements().dropWhile(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function dropWhile_with_always_true_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).dropWhile(@(x) true);
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+        end
+        
+        function dropWhile_with_always_false_predicate(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).dropWhile(@(x) false);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+        end
+        
+        function dropWhile_with_partially_matching_predicate(testCase)
             
             list = testCase.ofElements('a', 'b', 'c', 'd', 'e').dropWhile(@(x) ~strcmp(x, 'd'));
             testCase.mustBeList(list);
@@ -836,14 +1224,22 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             
             list = testCase.ofElements(1, 2, 3, 4, 5).dropWhile(@(x) ~isnumeric(x));
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements(1, 2, 3, 4, 5).dropWhile(@(x) isnumeric(x));
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
         end
         
-        function test_fold(testCase)
+        
+        function fold_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().fold(0, @(acc, elem) 1000), 0);
+            testCase.assertEqual(testCase.ofElements().fold(100, @(acc, elem) 1000), 100);
+            thc = TestHandleClass();
+            testCase.assertEqual(testCase.ofElements().fold(thc, @(acc, elem) 1000), thc);
+        end
+        
+        function fold_on_non_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements(1, 2, 3).fold(0, @(acc, elem) acc), 0);
             
             testCase.assertEqual(testCase.ofElements('a', 'b', 'c', 'd', 'e').fold(0, @(acc, elem) acc+numel(elem)), 5);
@@ -855,8 +1251,14 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.ofElements(1, 2, 3, 4, 5)).fold(1000, @(acc, elem) acc+elem.size()), 1009);
         end
         
-        function test_foldIndexed(testCase)
+        function foldIndexed_on_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements().foldIndexed(0, @(ind, acc, elem) 1000), 0);
+            testCase.assertEqual(testCase.ofElements().foldIndexed(100, @(ind, acc, elem) 1000), 100);
+            thc = TestHandleClass();
+            testCase.assertEqual(testCase.ofElements().foldIndexed(thc, @(ind, acc, elem) 1000), thc);
+        end
+        
+        function foldIndexed_on_non_empty_collection(testCase)
             testCase.assertEqual(testCase.ofElements(1, 2, 3).foldIndexed(0, @(ind, acc, elem) acc), 0);
             
             testCase.assertEqual(testCase.ofElements('a', 'b', 'c', 'd', 'e').foldIndexed(0, @(ind, acc, elem) acc+numel(elem)), 5);
@@ -876,180 +1278,268 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.ofElements(1, 2, 3, 4, 5)).foldIndexed(1000, @(ind, acc, elem) acc+elem.size()+ind), 1015);
         end
         
-        function test_map(testCase)
-            % Mapping empty collection creates an empty list
+        
+        function map_on_empty_collection(testCase)
             emptyList = testCase.ofElements().map(@(e) e);
             testCase.mustBeList(emptyList);
             testCase.assertEqual(emptyList.size(), 0);
-            
-            % Create an identic list
+        end
+        
+        function map_on_non_empty_collection(testCase)
             list = testCase.ofElements(1, 2, 3, 4, 5).map(@(e) e);
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
             
             list = testCase.ofElements('a', 'bb', 'ccc').map(@(elem) numel(elem));
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                testCase.assertEqual(list.get(i), i);
-            end
+            testCase.assertElementsFromOneUntil(list, 3);
         end
         
-        function test_mapNotNull(testCase)
-            % Mapping empty collection creates an empty list
+        
+        function mapNotNull_on_empty_collection(testCase)
             emptyList = testCase.ofElements().mapNotNull(@(e) e);
             testCase.mustBeList(emptyList);
             testCase.assertEqual(emptyList.size(), 0);
-            
-            % List containing nulls
+        end
+        
+        function mapNotNull_on_non_empty_collection(testCase)
             list = testCase.ofElements(1, [], 2, [], [], 3, 4, 5, []).mapNotNull(@(e) e);
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
             
             list = testCase.ofElements('a', 'bb', 'ccc').mapNotNull(@(elem) numel(elem));
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                testCase.assertEqual(list.get(i), i);
-            end
+            testCase.assertElementsFromOneUntil(list, 3);
             
-            % List containing nulls
-            list = testCase.ofElements(0, [], '', [], '', [], 0, struct()).mapNotNull(@(e) e);
+            list = testCase.ofElements(1, [], '', [], [], 4, struct()).mapNotNull(@(e) e);
             testCase.mustBeList(list);
-            testCase.assertEqual(list.get(1), 0);
+            testCase.assertEqual(list.get(1), 1);
             testCase.assertEqual(list.get(2), '');
-            testCase.assertEqual(list.get(3), '');
-            testCase.assertEqual(list.get(4), 0);
-            testCase.assertEqual(list.get(5), struct());
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertEqual(list.get(3), 4);
+            testCase.assertEqual(list.get(4), struct());
+            testCase.assertEqual(list.size(), 4);
         end
         
-        function test_mapNotEmpty(testCase)
-            % Mapping empty collection creates an empty list
+        
+        function mapNotEmpty_on_empty_collection(testCase)
             emptyList = testCase.ofElements().mapNotEmpty(@(e) e);
             testCase.mustBeList(emptyList);
             testCase.assertEqual(emptyList.size(), 0);
-            
-            % List containing nulls
+        end
+        
+        function mapNotEmpty_on_non_empty_collection(testCase)
             list = testCase.ofElements(1, [], 2, [], [], 3, 4, 5, []).mapNotEmpty(@(e) e);
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
+            testCase.assertElementsFromOneUntil(list, 5);
             
-            list = testCase.ofElements('a', 'bb', 'ccc').mapNotEmpty(@(elem) numel(elem));
+            list = testCase.ofElements('a', 'bb', 'ccc').mapNotNull(@(elem) numel(elem));
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                testCase.assertEqual(list.get(i), i);
-            end
+            testCase.assertElementsFromOneUntil(list, 3);
             
-            % List containing nulls
-            list = testCase.ofElements(0, [], '', [], '', [], 0, {}, {'a'}).mapNotEmpty(@(e) e);
+            
+            list = testCase.ofElements(0, [], '', [], '', [], 1, {}, {'a'}).mapNotEmpty(@(e) e);
             testCase.mustBeList(list);
             testCase.assertEqual(list.get(1), 0);
-            testCase.assertEqual(list.get(2), 0);
+            testCase.assertEqual(list.get(2), 1);
             testCase.assertEqual(list.get(3), {'a'});
             testCase.assertEqual(list.size(), 3);
         end
         
-        function test_mapIndexed(testCase)
-            % Mapping empty collection creates an empty list
+        
+        function mapIndexed_on_empty_collection(testCase)
             emptyList = testCase.ofElements().mapIndexed(@(ind, e) e);
             testCase.mustBeList(emptyList);
             testCase.assertEqual(emptyList.size(), 0);
+        end
+        
+        function mapIndexed_on_non_empty_collection(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).mapIndexed(@(ind, e) ind);
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
             
-            % Create an identic list
             list = testCase.ofElements(1, 2, 3, 4, 5).mapIndexed(@(ind, e) e);
             testCase.mustBeList(list);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
-            end
-            testCase.assertEqual(list.size(), 5);
-            
-            list = testCase.ofElements('a', 'bb', 'ccc').mapIndexed(@(ind, elem) numel(elem));
+            testCase.assertElementsFromOneUntil(list, 5);
+        end
+        
+        
+        function flatMap_on_empty_collection(testCase)
+            emptyList = testCase.ofElements().flatMap(@(e) MXtension.listOf('a', 'b'));
+            testCase.mustBeList(emptyList);
+            testCase.assertEqual(emptyList.size(), 0);
+        end
+        
+        function flatMap_on_non_empty_collection(testCase)
+            list = testCase.ofElements(1, 2, 3).flatMap(@(e) MXtension.emptyList());
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                testCase.assertEqual(list.get(i), i);
-            end
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements(1, 2, 3).flatMap(@(e) MXtension.emptySet());
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
+            
+            list = testCase.ofElements({1, 2}, {3, 4, 5}).flatMap(@(x) MXtension.listFrom(x));
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements({1, 2}, {3, 4, 5}).flatMap(@(x) MXtension.setFrom(x));
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements(MXtension.listOf(1, 2), MXtension.setOf(3, 4, 5)).flatMap(@(x) MXtension.listFrom(x));
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements(testCase.javaListOf(1, 2), ...
+                testCase.javaListOf(), ...
+                testCase.javaSetOf(3, 4, 5), ...
+                testCase.javaSetOf(), ...
+                MXtension.setOf(), ...
+                MXtension.setOf(6, 7), ...
+                MXtension.listOf(8), ...
+                MXtension.listOf(), ...
+                {9, 10}, ...
+                {}).flatMap(@(x) MXtension.setFrom(x));
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 10);
         end
         
-        function test_flatMap(testCase)
-            % Test if empty collections are returned
-            testCase.assertEqual(testCase.ofElements().flatMap(@(x) MXtension.listOf('a')).size(), 0);
-            testCase.assertEqual(testCase.ofElements('a', 'b').flatMap(@(x) MXtension.emptyList()).size(), 0);
-            testCase.assertEqual(testCase.ofElements('a', 'b').flatMap(@(x) MXtension.emptySet()).size(), 0);
-            testCase.assertEqual(testCase.ofElements('a', 'b').flatMap(@(x) MXtension.mutableSetOf()).size(), 0);
-            testCase.assertEqual(testCase.ofElements('a', 'b').flatMap(@(x) MXtension.mutableListOf()).size(), 0);
-            
-            
-            evaluateResult(testCase.ofElements({1, 2}, {3, 4, 5}).flatMap(@(x) MXtension.listFrom(x)));
-            evaluateResult(testCase.ofElements({1, 2}, {3, 4, 5}).flatMap(@(x) MXtension.setFrom(x)));
-            
-            function evaluateResult(list)
-                testCase.mustBeList(list);
-                testCase.assertEqual(list.size(), 5);
-                for i = 1:5
-                    testCase.assertEqual(list.get(i), i);
-                end
-            end
+        
+        function flatten_on_empty_collection(testCase)
+            emptyList = testCase.ofElements().flatten();
+            testCase.mustBeList(emptyList);
+            testCase.assertEqual(emptyList.size(), 0);
         end
         
-        function test_flatten(testCase)
-            % Test if empty collections are returned
-            testCase.assertEqual(testCase.ofElements().flatten().size(), 0);
-            testCase.assertEqual(testCase.ofElements(MXtension.listOf(), MXtension.setOf()).flatten().size(), 0);
-            
+        function flatten_on_non_empty_collection(testCase)
             
             list = testCase.ofElements(MXtension.listOf(1, 2), MXtension.setOf(3, 4, 5)).flatten();
-            
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 5);
-            for i = 1:5
-                testCase.assertEqual(list.get(i), i);
+            testCase.assertElementsFromOneUntil(list, 5);
+            
+            list = testCase.ofElements(testCase.javaListOf(1, 2), ...
+                testCase.javaListOf(), ...
+                testCase.javaSetOf(3, 4, 5), ...
+                testCase.javaSetOf(), ...
+                MXtension.setOf(), ...
+                MXtension.setOf(6, 7), ...
+                MXtension.listOf(8), ...
+                MXtension.listOf(), ...
+                {9, 10}, ...
+                {}).flatten();
+            testCase.mustBeList(list);
+            testCase.assertElementsFromOneUntil(list, 10);
+            
+        end
+        
+        
+        function intersect_receiver_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3);
+            for i = 1:numel(collections)
+                set = testCase.ofElements().intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertEqual(set.size(), 0);
+            end
+        end
+        
+        function intersect_passed_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf();
+            for i = 1:numel(collections)
+                set = testCase.ofElements(1, 2, 3).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertEqual(set.size(), 0);
+            end
+        end
+        
+        function intersect_both_collection_is_non_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3, 4, 5);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(1, 2, 3, 4, 5).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertElementsFromOneUntil(set, 5);
             end
             
+            collections = testCase.allKindsOfCollectionsOf(2, 5, 1, 3, 4);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(1, 2, 3, 4, 5).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertElementsFromOneUntil(set, 5);
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf(0, 2, 5, 1, 3, 4);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(1, 2, 3, 4, 5).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertElementsFromOneUntil(set, 5);
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3, 4, 5);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(0, 1, 11, 2, 22, 3, 33, 4, 44, 5, 55).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertElementsFromOneUntil(set, 5);
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3, 4, 5);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(6, 7, 8, 9, 10).intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertEqual(set.size(), 0);
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf('b', 'd', 'a');
+            for i = 1:numel(collections)
+                set = testCase.ofElements('a', 'b', 'c').intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertEqual(set.size(), 2);
+                it = set.iterator();
+                testCase.assertEqual(it.next(), 'a');
+                testCase.assertEqual(it.next(), 'b');
+            end
+            
+            
+            tdc1 = TestDataClass();
+            tdc1.Property1 = '1';
+            tdc1.Property2 = '2';
+            
+            tdc2 = TestDataClass();
+            tdc2.Property1 = '1';
+            tdc2.Property2 = '2';
+            
+            thc1 = TestHandleClass();
+            thc1.PropertyA = 'A';
+            thc1.PropertyB = 'B';
+            
+            thc2 = TestHandleClass();
+            thc2.PropertyA = 'A';
+            thc2.PropertyB = 'B';
+            
+            collections = testCase.matlabCollectionsOf(thc2, thc1, tdc2);
+            for i = 1:numel(collections)
+                set = testCase.ofElements(thc1, tdc1, 'c').intersect(collections{i});
+                testCase.mustBeSet(set);
+                testCase.assertEqual(set.size(), 2);
+                it = set.iterator();
+                testCase.assertEqual(it.next(), thc1);
+                testCase.assertEqual(it.next(), tdc1);
+            end
         end
         
-        function test_intersect(testCase)
-            testCase.assertEqual(testCase.ofElements().intersect(testCase.ofElements(1)).size(), 0);
-            testCase.assertEqual(testCase.ofElements().intersect(testCase.ofElements()).size(), 0);
-            
-            set = testCase.ofElements(0, 1, 2, 3, 4, 5).intersect(testCase.ofElements(0, 1, 2, 3, 4, 5));
-            testCase.mustBeSet(set);
-            testCase.assertEqual(set.size(), 6);
-            testCase.assertTrue(set.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
-            
-            set = testCase.ofElements('a', 'b', 'c').intersect(testCase.ofElements('a', 'b'));
-            testCase.mustBeSet(set);
-            testCase.assertEqual(set.size(), 2);
-            testCase.assertTrue(set.containsAll(testCase.ofElements('a', 'b')));
-            
-            set = testCase.ofElements('a', 'b', 'c').intersect(testCase.ofElements('d', 'e'));
-            testCase.mustBeSet(set);
-            testCase.assertEqual(set.size(), 0);
+        
+        function distinct_on_empty_collection(testCase)
+            list = testCase.ofElements().distinct();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 0);
         end
         
-        function test_distinct(testCase)
-            testCase.assertEqual(testCase.ofElements().distinct().size(), 0);
-            
-            list = testCase.ofElements(0, 1, 2, 3, 4, 5).distinct();
+        function distinct_on_non_empty_collection(testCase)
+            list = testCase.ofElements(1, 2, 3, 4, 5).distinct();
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 6);
-            testCase.assertTrue(list.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
+            testCase.assertElementsFromOneUntil(list, 5);
             
-            list = testCase.ofElements(0, 1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 0).distinct();
+            list = testCase.ofElements(1, 2, 3, 4, 5, 5, 4, 3, 2, 1).distinct();
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 6);
-            testCase.assertTrue(list.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
+            testCase.assertElementsFromOneUntil(list, 5);
             
             l1 = MXtension.listOf();
             l2 = MXtension.listOf();
@@ -1065,16 +1555,43 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.size(), 2);
             testCase.assertTrue(list.containsAll(testCase.ofElements(l1, l3)));
             testCase.assertTrue(list.containsAll(testCase.ofElements(l2, l3)));
+            
+            tdc1 = TestDataClass();
+            tdc1.Property1 = '1';
+            tdc1.Property2 = '2';
+            
+            tdc2 = TestDataClass();
+            tdc2.Property1 = '1';
+            tdc2.Property2 = '2';
+            
+            thc1 = TestHandleClass();
+            thc1.PropertyA = 'A';
+            thc1.PropertyB = 'B';
+            
+            thc2 = TestHandleClass();
+            thc2.PropertyA = 'A';
+            thc2.PropertyB = 'B';
+            
+            list = testCase.ofElements(tdc1, tdc2, thc1, thc2).distinct();
+            testCase.mustBeList(list);
+            testCase.assertEqual(list.size(), 3);
+            it = list.iterator();
+            testCase.assertEqual(it.next(), tdc1);
+            testCase.assertEqual(it.next(), thc1);
+            testCase.assertEqual(it.next(), thc2);
         end
         
-        function test_partition(testCase)
+        
+        function partition_on_empty_list(testCase)
             pair = testCase.ofElements().partition(@(x) true);
             testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 0);
             testCase.assertEqual(pair.Second.size(), 0);
-            
+        end
+        
+        function partition_with_always_true_predicate(testCase)
             pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) true);
             testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
@@ -1082,7 +1599,9 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(pair.First.size(), 6);
             testCase.assertEqual(pair.Second.size(), 0);
             testCase.assertTrue(pair.First.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
-            
+        end
+        
+        function partition_with_always_false_predicate(testCase)
             pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) false);
             testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
@@ -1090,145 +1609,221 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(pair.First.size(), 0);
             testCase.assertEqual(pair.Second.size(), 6);
             testCase.assertTrue(pair.Second.containsAll(testCase.ofElements(0, 1, 2, 3, 4, 5)));
-            
-            pair = testCase.ofElements(0, 1, 2, 3, 4, 5).partition(@(x) x > 3);
+        end
+        
+        function partition_with_partially_matching_predicate(testCase)
+            pair = testCase.ofElements(1, 2, 3, 4, 5).partition(@(x) x > 3);
             testCase.mustBePair(pair);
             testCase.mustBeList(pair.First);
             testCase.mustBeList(pair.Second);
             testCase.assertEqual(pair.First.size(), 2);
-            testCase.assertEqual(pair.Second.size(), 4);
-            testCase.assertTrue(pair.First.containsAll(testCase.ofElements(4, 5)));
-            testCase.assertTrue(pair.Second.containsAll(testCase.ofElements(0, 1, 2, 3)));
+            testCase.assertEqual(pair.Second.size(), 3);
+            
+            testCase.assertElementsFromOneUntilWithOffset(pair.First, 2, 4);
+            testCase.assertElementsFromOneUntil(pair.Second, 3);
         end
         
-        function test_zip(testCase)
-            % Zip without transform
-            list = testCase.ofElements().zip(testCase.ofElements());
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            list = testCase.ofElements().zip(MXtension.setOf(1, 2, 3));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf());
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.First, i);
-                switch i
-                    case 1
-                        testCase.assertEqual(elem.Second, 'a');
-                        break;
-                    case 2
-                        testCase.assertEqual(elem.Second, 'b');
-                        break;
-                    case 3
-                        testCase.assertEqual(elem.Second, 'c');
-                        break;
-                end
-            end
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 2);
-            for i = 1:2
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.First, i);
-                testCase.assertEqual(elem.Second, i*10);
-            end
-            
-            list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 2);
-            for i = 1:2
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.First, i);
-                testCase.assertEqual(elem.Second, i*10);
-            end
-            
-            
-            % Zip with transform
-            list = testCase.ofElements().zip(testCase.ofElements(), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            list = testCase.ofElements().zip(MXtension.setOf(1, 2, 3), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 0);
-            
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf('a', 'b', 'c'), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 3);
-            for i = 1:3
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.Second, i);
-                switch i
-                    case 1
-                        testCase.assertEqual(elem.First, 'a');
-                        break;
-                    case 2
-                        testCase.assertEqual(elem.First, 'b');
-                        break;
-                    case 3
-                        testCase.assertEqual(elem.First, 'c');
-                        break;
-                end
-            end
-            
-            list = testCase.ofElements(1, 2, 3).zip(MXtension.listOf(10, 20), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 2);
-            for i = 1:2
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.Second, i);
-                testCase.assertEqual(elem.First, i*10);
-            end
-            
-            list = testCase.ofElements(1, 2).zip(MXtension.listOf(10, 20, 30), @(first, second) MXtension.Pair(second, first));
-            testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 2);
-            for i = 1:2
-                elem = list.get(i);
-                testCase.mustBePair(elem);
-                testCase.assertEqual(elem.Second, i);
-                testCase.assertEqual(elem.First, i*10);
+        
+        function zip_without_transform_receiver_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3);
+            for i = 1:numel(collections)
+                list = testCase.ofElements().zip(collections{i});
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 0);
             end
         end
         
-        function test_associate(testCase)
+        function zip_without_transform_passed_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf();
+            for i = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{i});
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 0);
+            end
+        end
+        
+        function zip_without_transform(testCase)
+            collections = testCase.allKindsOfCollectionsOf(4, 5, 6);
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{iColl});
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.First, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.Second, 4);
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.Second, 5);
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.Second, 6);
+                            break;
+                    end
+                end
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf('a', 'b', 'c', 'd');
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{iColl});
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.First, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.Second, 'a');
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.Second, 'b');
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.Second, 'c');
+                            break;
+                    end
+                end
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf('a', 'b', 'c');
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3, 4).zip(collections{iColl});
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.First, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.Second, 'a');
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.Second, 'b');
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.Second, 'c');
+                            break;
+                    end
+                end
+            end
+        end
+        
+        function zip_with_transform_receiver_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf(1, 2, 3);
+            for i = 1:numel(collections)
+                list = testCase.ofElements().zip(collections{i}, @(first, second) MXtension.Pair(second, first));
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 0);
+            end
+        end
+        
+        function zip_with_transform_passed_collection_is_empty(testCase)
+            collections = testCase.allKindsOfCollectionsOf();
+            for i = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{i}, @(first, second) MXtension.Pair(second, first));
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 0);
+            end
+        end
+        
+        function zip_with_transform(testCase)
+            collections = testCase.allKindsOfCollectionsOf('a', 'b', 'c');
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{iColl}, @(first, second) MXtension.Pair(second, first));
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.Second, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.First, 'a');
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.First, 'b');
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.First, 'c');
+                            break;
+                    end
+                end
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf('a', 'b', 'c', 'd');
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3).zip(collections{iColl}, @(first, second) MXtension.Pair(second, first));
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.Second, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.First, 'a');
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.First, 'b');
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.First, 'c');
+                            break;
+                    end
+                end
+            end
+            
+            collections = testCase.allKindsOfCollectionsOf('a', 'b', 'c');
+            for iColl = 1:numel(collections)
+                list = testCase.ofElements(1, 2, 3, 4).zip(collections{iColl}, @(first, second) MXtension.Pair(second, first));
+                testCase.mustBeList(list);
+                testCase.assertEqual(list.size(), 3);
+                for i = 1:3
+                    elem = list.get(i);
+                    testCase.mustBePair(elem);
+                    testCase.assertEqual(elem.Second, i);
+                    switch i
+                        case 1
+                            testCase.assertEqual(elem.First, 'a');
+                            break;
+                        case 2
+                            testCase.assertEqual(elem.First, 'b');
+                            break;
+                        case 3
+                            testCase.assertEqual(elem.First, 'c');
+                            break;
+                    end
+                end
+            end
+        end
+        
+        
+        function associate_on_empty_collection(testCase)
             map = testCase.ofElements().associate(@(x) MXtension.Pair('a', 2));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
-            
-            map = testCase.ofElements({'a', 1}, {'b', 2}, {'c', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
+        end
+        
+        function associate_on_non_empty_collection(testCase)
+            map = testCase.ofElements({'a', 1}, {'b', 2}, {'c', 3}).associate(@(x) MXtension.Pair(x{2}, x{1}));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 3);
-            testCase.assertEqual(map.get('a'), 1);
-            testCase.assertEqual(map.get('b'), 2);
-            testCase.assertEqual(map.get('c'), 3);
+            testCase.assertEqual(map.get(1), 'a');
+            testCase.assertEqual(map.get(2), 'b');
+            testCase.assertEqual(map.get(3), 'c');
             
-            map = testCase.ofElements({'a', 1}, {'a', 2}, {'a', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
+            map = testCase.ofElements({'a', 1}, {'b', 10}, {'a', 2},{'b', 100}, {'a', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
             testCase.mustBeMap(map);
-            testCase.assertEqual(map.keys.size(), 1);
+            testCase.assertEqual(map.keys.size(), 2);
             testCase.assertEqual(map.get('a'), 3);
+            testCase.assertEqual(map.get('b'), 100);
         end
+        
         
         function test_associateBy(testCase)
             map = testCase.ofElements().associateBy(@(x) double(x));
