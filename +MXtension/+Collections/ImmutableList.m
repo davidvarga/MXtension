@@ -1,5 +1,4 @@
 classdef ImmutableList < MXtension.Collections.List
-    % An untyped list implementation backed by a cell array.
     
     properties(Access = protected)
         CellArray;
@@ -67,42 +66,25 @@ classdef ImmutableList < MXtension.Collections.List
             else
                 throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
-            
-            
         end
-        
     end
-    
-    %% List interface
+
     methods
-        
-        
         function item = get(obj, index)
-            % element: Any = list.get(index: double): Returns the element at the specified index in the list.
-            % TODO: throws IndexOutOfBoundsException
+            obj.verifySuppliedIndexToRetrieve(index);
             
-            if index > 0 && index <= numel(obj.CellArray)
-                item = obj.CellArray{index};
-            else
-                throw(MException('MXtension:IndexOutOfBoundsException', ['The collection does not contain any element at index ', num2str(index)]));
-            end
+            item = obj.CellArray{index};
         end
-        
         
         function size = size(obj)
-            % size: double = list.size(): Returns the number of elements in this list.
             size = numel(obj.CellArray);
         end
     end
     
-    %% Functional terminal operations
     methods
-        
-        
         function cellArray = toCellArray(obj)
             cellArray = obj.CellArray;
         end
-        
     end
     
     

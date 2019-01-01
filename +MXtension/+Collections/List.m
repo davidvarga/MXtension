@@ -1,12 +1,24 @@
 classdef (Abstract) List < MXtension.Collections.Collection
-    % Typeless list interface.
-    
-    
-    
     methods(Abstract)
+        % element: Any = list.get(index: double): Returns the element at the specified index in the list.
+        % Throws MXtension:IndexOutOfBoundsException if the specified index is out ouf the list's boundaries.
         item = get(obj, index)
 
         % TODO: sortWith, sortBy
+    end
+    
+    methods (Access = protected)
+        function verifySuppliedIndexToRetrieve(obj, index)
+            if ~isnumeric(index) || index < 1 || index > obj.size()
+                throw(MException('MXtension:IndexOutOfBoundsException', 'The collection does not contain any element at the specified index.')); 
+            end
+        end
+        
+        function verifySuppliedIndexToInsert(obj, index)
+            if ~isnumeric(index) || index < 1 || index > obj.size() + 1
+                throw(MException('MXtension:IndexOutOfBoundsException', 'The collection does not contain any element at the specified index.')); 
+            end
+        end
     end
     
     methods

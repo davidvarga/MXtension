@@ -721,7 +721,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
-                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 1');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at the specified index.');
             end
             
             try
@@ -729,7 +729,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
-                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 0');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at the specified index.');
             end
         end
         
@@ -743,7 +743,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
-                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 6');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at the specified index.');
             end
             
             try
@@ -751,7 +751,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
                 testCase.verifyFail();
             catch ex
                 testCase.assertEqual(ex.identifier, 'MXtension:IndexOutOfBoundsException');
-                testCase.assertEqual(ex.message, 'The collection does not contain any element at index 0');
+                testCase.assertEqual(ex.message, 'The collection does not contain any element at the specified index.');
             end
         end
         
@@ -1817,7 +1817,7 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(map.get(2), 'b');
             testCase.assertEqual(map.get(3), 'c');
             
-            map = testCase.ofElements({'a', 1}, {'b', 10}, {'a', 2},{'b', 100}, {'a', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
+            map = testCase.ofElements({'a', 1}, {'b', 10}, {'a', 2}, {'b', 100}, {'a', 3}).associate(@(x) MXtension.Pair(x{1}, x{2}));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 2);
             testCase.assertEqual(map.get('a'), 3);
@@ -1825,16 +1825,19 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
         end
         
         
-        function test_associateBy(testCase)
+        function associateBy_keyselector_on_empty_collection(testCase)
             map = testCase.ofElements().associateBy(@(x) double(x));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
-            
+        end
+        
+        function associateBy_keySelector_and_valueTransform_on_empty_collection(testCase)
             map = testCase.ofElements().associateBy(@(x) double(x), @(x) [x, '-1']);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
-            
-            
+        end
+        
+        function associateBy_keySelector_on_non_empty_collection(testCase)
             map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) double(x));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 3);
@@ -1842,11 +1845,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(map.get(98), 'b');
             testCase.assertEqual(map.get(99), 'c');
             
-            map = testCase.ofElements('a', 'a', 'a').associateBy(@(x) double(x));
+            map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) 10);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 1);
-            testCase.assertEqual(map.get(97), 'a');
-            
+            testCase.assertEqual(map.get(10), 'c');
+        end
+        
+        function associateBy_keySelector_valueTransform_on_non_empty_collection(testCase)
             map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) double(x), @(x) [x, '-', num2str(double(x))]);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 3);
@@ -1854,17 +1859,20 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(map.get(98), 'b-98');
             testCase.assertEqual(map.get(99), 'c-99');
             
-            map = testCase.ofElements('a', 'a', 'a').associateBy(@(x) double(x), @(x) [x, '-', num2str(double(x))]);
+            map = testCase.ofElements('a', 'b', 'c').associateBy(@(x) 10, @(x) [x, '-', num2str(double(x))]);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 1);
-            testCase.assertEqual(map.get(97), 'a-97');
+            testCase.assertEqual(map.get(10), 'c-99');
         end
         
-        function test_associateWith(testCase)
+        
+        function associateWith_on_empty_collection(testCase)
             map = testCase.ofElements().associateWith(@(x) double(x));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
-            
+        end
+        
+        function associateWith_on_non_empty_collection(testCase)
             map = testCase.ofElements('a', 'b', 'c').associateWith(@(x) double(x));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 3);
@@ -1872,20 +1880,26 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(map.get('b'), 98);
             testCase.assertEqual(map.get('c'), 99);
             
-            map = testCase.ofElements('a', 'a', 'a').associateWith(@(x) double(x));
+            map = testCase.ofElements('a', 'a', 'a').associateWith(@(x) 10);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 1);
-            testCase.assertEqual(map.get('a'), 97);
+            testCase.assertEqual(map.get('a'), 10);
         end
         
-        function test_groupBy(testCase)
+        
+        function groupBy_keySelector_on_empty_collection(testCase)
             map = testCase.ofElements().groupBy(@(x) numel(x));
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
-            
+        end
+        
+        function groupBy_keySelector_valueTransform_on_empty_collection(testCase)
             map = testCase.ofElements().groupBy(@(x) numel(x), @(x) [x, '-', x]);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 0);
+        end
+        
+        function groupBy_keySelector_on_non_empty_collection(testCase)
             
             map = testCase.ofElements('1', '11', '111').groupBy(@(x) numel(x));
             testCase.mustBeMap(map);
@@ -1912,8 +1926,10 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(map.get(3).size(), 3);
             testCase.mustBeList(map.get(3));
             testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111', '222', '333')));
+        end
+        
+        function groupBy_keySelector_valueTransform_on_non_empty_collection(testCase)
             
-            %
             map = testCase.ofElements('1', '11', '111').groupBy(@(x) numel(x), @(x) [x, '-', x]);
             testCase.mustBeMap(map);
             testCase.assertEqual(map.keys.size(), 3);
@@ -1941,11 +1957,14 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(map.get(3).containsAll(MXtension.listOf('111-111', '222-222', '333-333')));
         end
         
-        function test_reversed(testCase)
+        
+        function reversed_on_empty_collection(testCase)
             list = testCase.ofElements().reversed();
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
-            
+        end
+        
+        function reversed_on_non_empty_collection(testCase)
             list = testCase.ofElements('a', 'b', 'c').reversed();
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 3);
@@ -1953,22 +1972,329 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.get(2), 'b');
             testCase.assertEqual(list.get(3), 'a');
             
-            list = testCase.ofElements(1, 2).reversed();
+            list = testCase.ofElements(5, 4, 3, 2, 1).reversed();
             testCase.mustBeList(list);
-            testCase.assertEqual(list.size(), 2);
-            testCase.assertEqual(list.get(1), 2);
-            testCase.assertEqual(list.get(2), 1);
+            testCase.assertElementsFromOneUntil(list, 5);
         end
         
-        % TODO: joinToChar
         
-        function test_toList_on_empty_collection(testCase)
+        function joinToChar_on_empty_collection(testCase)
+            str = testCase.ofElements().joinToChar();
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('transform', @(x) [x, '1']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('truncated', 'mytruncate');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('limit', 0);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('limit', 1);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('separator', '-');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'limit', 0);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'limit', 1);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'limit', 1, 'truncated', 'mytruncate');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(numel(str), 0);
+            
+            str = testCase.ofElements().joinToChar('prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'separator', '-', 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'separator', '-', 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'separator', '-', 'prefix', 'myprefix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix');
+            
+            str = testCase.ofElements().joinToChar('postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'separator', '-', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'separator', '-', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'separator', '-', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'mypostfix');
+            
+            str = testCase.ofElements().joinToChar('prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('separator', '-', 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 0, 'separator', '-', 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'separator', '-', 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+            
+            str = testCase.ofElements().joinToChar('limit', 1, 'truncated', 'mytruncate', 'separator', '-', 'prefix', 'myprefix', 'postfix', 'mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefixmypostfix');
+        end
+        
+        function joinToChar_defaults(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar();
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, c');
+            
+            str = testCase.ofElements('a').joinToChar();
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a');
+        end
+        
+        function joinToChar_transform(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('transform', @(x) [x, '-1']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a-1, b-1, c-1');
+            
+            str = testCase.ofElements('a').joinToChar('transform', @(x) [x, '-1']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a-1');
+        end
+        
+        function joinToChar_separator(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('separator', '+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a+b+c');
+            
+            str = testCase.ofElements('a').joinToChar('separator', '+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a');
+        end
+        
+        function joinToChar_transform_separator(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('transform', @(x) [x, '-1'], 'separator', '+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a-1+b-1+c-1');
+            
+            str = testCase.ofElements('a').joinToChar('transform', @(x) [x, '-1'], 'separator', '+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a-1');
+        end
+        
+        function joinToChar_prefix_postfix(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('prefix', 'myprefix+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix+a, b, c');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('postfix', '+mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, c+mypostfix');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('prefix', 'myprefix+', 'postfix', '+mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix+a, b, c+mypostfix');
+            
+            str = testCase.ofElements('a').joinToChar('prefix', 'myprefix+');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix+a');
+            
+            str = testCase.ofElements('a').joinToChar('postfix', '+mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a+mypostfix');
+            
+            str = testCase.ofElements('a').joinToChar('prefix', 'myprefix+', 'postfix', '+mypostfix');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'myprefix+a+mypostfix');
+        end
+        
+        function joinToChar_limit(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, '...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, ...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, ...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, c');
+        end
+        
+        function joinToChar_limit_prefix_postfix(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0, 'prefix', 'pre');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'pre...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0, 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, '...post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0, 'prefix', 'pre', 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'pre...post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1, 'prefix', 'pre');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, ...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1, 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, ...post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1, 'prefix', 'pre', 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, ...post');
+            
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2, 'prefix', 'pre');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, b, ...');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2, 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, ...post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2, 'prefix', 'pre', 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, b, ...post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3, 'prefix', 'pre');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, b, c');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3, 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, cpost');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3, 'prefix', 'pre', 'postfix', 'post');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea, b, cpost');
+        end
+        
+        function joinToChar_limit_truncate(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0, 'truncate', '++++');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, '++++');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1, 'truncate', '++++');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, ++++');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2, 'truncate', '++++');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, ++++');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3, 'truncate', '++++');
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'a, b, c');
+        end
+        
+        
+        function joinToChar_everything_set(testCase)
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 0, 'truncate', '++', 'prefix', 'pre', 'postfix', 'post', 'separator', '@', 'transform', @(x) [x, '!']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'pre++post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 1, 'truncate', '++', 'prefix', 'pre', 'postfix', 'post', 'separator', '@', 'transform', @(x) [x, '!']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea!@++post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 2, 'truncate', '++', 'prefix', 'pre', 'postfix', 'post', 'separator', '@', 'transform', @(x) [x, '!']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea!@b!@++post');
+            
+            str = testCase.ofElements('a', 'b', 'c').joinToChar('limit', 3, 'truncate', '++', 'prefix', 'pre', 'postfix', 'post', 'separator', '@', 'transform', @(x) [x, '!']);
+            testCase.assertTrue(ischar(str))
+            testCase.assertEqual(str, 'prea!@b!@c!post');
+        end
+        
+        function toList_on_empty_collection(testCase)
             list = testCase.ofElements().toList();
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 0);
         end
         
-        function test_toList_on_collection(testCase)
+        function toList_on_collection(testCase)
             list = testCase.ofElements('a', 1, 'dog').toList();
             testCase.mustBeList(list);
             testCase.assertEqual(list.size(), 3);
@@ -1977,13 +2303,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.get(3), 'dog');
         end
         
-        function test_toMutableList_on_empty_collection(testCase)
+        function toMutableList_on_empty_collection(testCase)
             list = testCase.ofElements().toMutableList();
             testCase.mustBeMutableList(list);
             testCase.assertEqual(list.size(), 0);
         end
         
-        function test_toMutableList_on_collection(testCase)
+        function toMutableList_on_collection(testCase)
             list = testCase.ofElements('a', 1, 'dog').toMutableList();
             testCase.mustBeMutableList(list);
             testCase.assertEqual(list.size(), 3);
@@ -1992,13 +2318,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertEqual(list.get(3), 'dog');
         end
         
-        function test_toSet_on_empty_collection(testCase)
+        function toSet_on_empty_collection(testCase)
             set = testCase.ofElements().toSet();
             testCase.mustBeSet(set);
             testCase.assertEqual(set.size(), 0);
         end
         
-        function test_toSet_on_collection(testCase)
+        function toSet_on_collection(testCase)
             set = testCase.ofElements('a', 1, 'dog').toSet();
             testCase.mustBeSet(set);
             testCase.assertEqual(set.size(), 3);
@@ -2007,13 +2333,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(set.contains('dog'));
         end
         
-        function test_toMutableSet_on_empty_collection(testCase)
+        function toMutableSet_on_empty_collection(testCase)
             set = testCase.ofElements().toMutableSet();
             testCase.mustBeMutableSet(set);
             testCase.assertEqual(set.size(), 0);
         end
         
-        function test_toMutableSet_on_collection(testCase)
+        function toMutableSet_on_collection(testCase)
             set = testCase.ofElements('a', 1, 'dog').toMutableSet();
             testCase.mustBeMutableSet(set);
             testCase.assertEqual(set.size(), 3);
@@ -2022,13 +2348,13 @@ classdef (Abstract) CollectionTest < matlab.unittest.TestCase
             testCase.assertTrue(set.contains('dog'));
         end
         
-        function test_toCellArray_on_empty_collection(testCase)
+        function toCellArray_on_empty_collection(testCase)
             cellArray = testCase.ofElements().toCellArray();
             testCase.mustBeCellArray(cellArray);
             testCase.assertEqual(numel(cellArray), 0);
         end
         
-        function test_toCellArray_on_collection(testCase)
+        function toCellArray_on_collection(testCase)
             cellArray = testCase.ofElements('a', 1, 'dog').toCellArray();
             testCase.mustBeCellArray(cellArray);
             testCase.assertEqual(size(cellArray), [1, 3]);

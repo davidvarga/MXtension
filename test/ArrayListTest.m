@@ -10,7 +10,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
          
         
         
-        function test_insert(testCase)      
+        function insert(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 3);
             list.insert(1, 'newelement');
             testCase.verifyEqual(list.size(), 4);
@@ -23,7 +23,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
             testCase.verifyEqual(list.get(5), 999);
         end
   
-        function test_insertAll(testCase)      
+        function insertAll(testCase)      
             list = MXtension.Collections.ArrayList.ofElements('orig1', 'orig2');
             list.insertAll(1, {'newelement1', 'newelement2'});
             testCase.verifyEqual(list.size(), 4);
@@ -54,7 +54,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
             testCase.verifyEqual(list.get(8), 'b');
         end
         
-        function test_set(testCase)      
+        function set(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1,2,3);
             previous = list.set(2, 'newelement');
             testCase.verifyEqual(list.size(), 3);
@@ -70,7 +70,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
         % TODO: test set with exception
         
         
-        function test_removeAt(testCase)      
+        function removeAt(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 3, 4);
             % Remove in the middle
             removed = list.removeAt(2);
@@ -106,7 +106,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
         
         %% 
         
-        function test_fill(testCase)      
+        function fill(testCase)      
             list = MXtension.Collections.ArrayList.ofElements(1, 2, 2, 3, 4);
             list.fill('a');
             for i = 1:list.size()
@@ -118,7 +118,7 @@ classdef ArrayListTest < MutableCollectionTest & matlab.unittest.TestCase
             
         end
         
-        function test_reverse(testCase)      
+        function reverse(testCase)      
             testCell = {1, 2, 2, 3, 4};
             list = MXtension.Collections.ArrayList.fromCollection(testCell);
             list.reverse();

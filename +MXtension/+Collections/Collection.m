@@ -407,7 +407,7 @@ classdef (Abstract) Collection < handle
                 end
                 count = count + 1;
             end
-            throw(MException('MXtension:IndexOutOfBoundsException', ['The collection does not contain any element at index ', num2str(index)]));
+            throw(MException('MXtension:IndexOutOfBoundsException', 'The collection does not contain any element at the specified index.'));
         end
         
         function elem = elementAtOrElse(obj, index, defaultValue)
@@ -498,7 +498,7 @@ classdef (Abstract) Collection < handle
         function list = take(obj, n)
             % list: MXtension.Collections.List = take(n: double) : Returns a list containing first n elements if possible.
             % Throws MXtension:IllegalArgumentException if the passed argument is smaller than zero or not a number.
-
+            
             if ~isnumeric(n) || n < 0
                 throw(MException('MXtension:IllegalArgumentException', 'The requested element count is less than zero.'));
             end
@@ -525,7 +525,7 @@ classdef (Abstract) Collection < handle
                 list = MXtension.emptyList();
                 return;
             else
-                list = MXtension.mutableListFrom(cell(1,outSize));
+                list = MXtension.mutableListFrom(cell(1, outSize));
                 iterator = obj.iterator();
                 outCount = 0;
                 while iterator.hasNext()
@@ -800,13 +800,13 @@ classdef (Abstract) Collection < handle
         end
         
         function listOfPairs = zip(obj, otherCollection, varargin)
-            % listOfPairs: MXtension.Colllections.List<MXtension.Pair> = zip(otherCollection: <Collection type valid for fromCollection factory>) : Returns a list 
+            % listOfPairs: MXtension.Colllections.List<MXtension.Pair> = zip(otherCollection: <Collection type valid for fromCollection factory>) : Returns a list
             % of pairs built from the elements of this collection and other collection with the same index.
-            % The returned list has length of the shortest collection and each element is an MXtension.Pair instance, where the element in the First 
+            % The returned list has length of the shortest collection and each element is an MXtension.Pair instance, where the element in the First
             % property is the element from the first collection and the element in the Second property is the element from the second collection.
             %
-            % list: MXtension.Colllections.List = zip(otherCollection: <Collection type valid for fromCollection factory>, transform: (Any, Any) -> Any) : 
-            % Returns a list of values built from the elements of this collection and the other collection with the same index using the provided transform function 
+            % list: MXtension.Colllections.List = zip(otherCollection: <Collection type valid for fromCollection factory>, transform: (Any, Any) -> Any) :
+            % Returns a list of values built from the elements of this collection and the other collection with the same index using the provided transform function
             % applied to each pair of elements.
             % The returned list has length of the shortest collection.
             %
@@ -814,7 +814,7 @@ classdef (Abstract) Collection < handle
             %   otherCollection - any collection type valid for fromCollection factory
             %   transform - function that takes the current element from the first collection and the element on the same index from the other
             %   collection and produces the value in the zipped collection.
-
+            
             if nargin < 3
                 transform = @(first, second) MXtension.Pair(first, second);
             else
@@ -838,7 +838,7 @@ classdef (Abstract) Collection < handle
         
         
         function map = associate(obj, transformer)
-            % map: MXtension.Collections.Map = associate(transformer: (Any) -> MXtension.Pair) : Returns a Map containing key-value pairs provided by 
+            % map: MXtension.Collections.Map = associate(transformer: (Any) -> MXtension.Pair) : Returns a Map containing key-value pairs provided by
             % transform function applied to elements of the given collection.
             % If any of two pairs would have the same key the last one gets added to the map.
             % The returned map preserves the entry iteration order of the original collection.
@@ -858,7 +858,7 @@ classdef (Abstract) Collection < handle
         end
         
         function map = associateWith(obj, valueTransform)
-            % map: MXtension.Collections.Map = associateWith(valueTransform: (Any) -> Any) : Returns a Map where keys are elements from the given 
+            % map: MXtension.Collections.Map = associateWith(valueTransform: (Any) -> Any) : Returns a Map where keys are elements from the given
             % collection and values are produced by the valueTransform function applied to each character.
             % If any two characters are equal, the last one gets added to the map.
             % The returned map preserves the entry iteration order of the original char sequence.
@@ -867,16 +867,16 @@ classdef (Abstract) Collection < handle
         end
         
         function map = associateBy(obj, keySelector, varargin)
-            % map: MXtension.Collections.Map = associateBy(keySelector: (Any) -> Any) : Returns a Map containing the elements from the given 
+            % map: MXtension.Collections.Map = associateBy(keySelector: (Any) -> Any) : Returns a Map containing the elements from the given
             % collection indexed by the key returned from keySelector function applied to each element.
             % If any two elements would have the same key returned by keySelector the last one gets added to the map.
             % The returned map preserves the entry iteration order of the original collection.
             %
-            % map: MXtension.Collections.Map = associateBy(obj, keySelector: (Any) -> Any, valueTransform: (Any) -> Any) : Returns a Map containing 
+            % map: MXtension.Collections.Map = associateBy(keySelector: (Any) -> Any, valueTransform: (Any) -> Any) : Returns a Map containing
             % the values provided by valueTransform and indexed by keySelector functions applied to elements of the given collection.
             % If any two elements would have the same key returned by keySelector the last one gets added to the map.
             % The returned map preserves the entry iteration order of the original collection.
-
+            
             mapInited = false;
             innerMap = [];
             iterator = obj.iterator();
@@ -905,13 +905,13 @@ classdef (Abstract) Collection < handle
         end
         
         function map = groupBy(obj, keySelector, varargin)
-            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any) : Groups elements of the original 
-            % collection by the key returned by the given keySelector function applied to each element and returns a map where each group key is 
+            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any) : Groups elements of the original
+            % collection by the key returned by the given keySelector function applied to each element and returns a map where each group key is
             % associated with a list of corresponding elements.
             % The returned map preserves the entry iteration order of the keys produced from the original collection.
             %
-            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any, valueTransform: (Any) -> Any) : 
-            % Groups values returned by the valueTransform function applied to each element of the original collection by the key returned by the 
+            % map: MXtension.Collections.Map<Any, MXtension.Collections.List> = groupBy(keySelector: Any -> Any, valueTransform: (Any) -> Any) :
+            % Groups values returned by the valueTransform function applied to each element of the original collection by the key returned by the
             % given keySelector function applied to the element and returns a map where each group key is associated with a list of corresponding values.
             % The returned map preserves the entry iteration order of the keys produced from the original collection.
             
@@ -927,7 +927,7 @@ classdef (Abstract) Collection < handle
                 else
                     value = next;
                 end
-               
+                
                 key = keySelector(next);
                 
                 if ~mapInited
@@ -945,8 +945,8 @@ classdef (Abstract) Collection < handle
             
             keys = innerMap.keys();
             for iKey = 1:numel(keys)
-               elem = innerMap(keys{iKey});
-               innerMap(keys{iKey}) = elem.toList();
+                elem = innerMap(keys{iKey});
+                innerMap(keys{iKey}) = elem.toList();
             end
             
             map = MXtension.mapFrom(innerMap);
@@ -961,52 +961,45 @@ classdef (Abstract) Collection < handle
         end
         
         function str = joinToChar(obj, varargin)
-            prefix = '';
-            postfix = '';
-            fcn = @(elem) elem;
-            separator = '';
-            if nargin == 2 && isa(varargin{1}, 'function_handle')
-                fcn = varargin{1};
-            elseif nargin == 2 && isa(varargin{1}, 'char')
-                separator = varargin{1};
-            elseif nargin == 3
-                if isa(varargin{2}, 'function_handle')
-                    fcn = varargin{2};
+            % str: char = joinToChar('separator': char (default = ', '), 'prefix': char (default = ''), 'postfix': char (default = ''),
+            % 'transform': (Any) -> char (default = @(x) x), 'limit': numeric (default = -1), 'truncated': char (default = ''...',')):
+            % Creates a char from all the elements separated using separator and using the given prefix and postfix if supplied.
+            %
+            % If the collection could be huge, you can specify a non-negative value of limit, in which case only the first limit elements will be appended,
+            % followed by the truncated string. If the limit is negative, no truncation will take place.
+            
+            inpParser = inputParser;
+            inpParser.addParameter('separator', ', ', @ischar);
+            inpParser.addParameter('prefix', '', @ischar);
+            inpParser.addParameter('postfix', '', @ischar);
+            inpParser.addParameter('transform', @(x) x, @(x) isa(x, 'function_handle'));
+            inpParser.addParameter('limit', -1, @isnumeric);
+            inpParser.addParameter('truncated', '...', @ischar);
+            
+            inpParser.parse(varargin{:});
+            
+            args = inpParser.Results;
+            
+            iter = obj.iterator();
+            count = 0;
+            str = args.prefix;
+            while iter.hasNext()
+                if count > 0
+                    str = [str, args.separator];
+                end
+                count = count + 1;
+                if args.limit < 0 || count <= args.limit
+                    str = [str, args.transform(iter.next())];
                 else
-                    prefix = varargin{2};
+                    break;
                 end
                 
-                separator = varargin{1};
-            elseif nargin == 4
-                if isa(varargin{2}, 'function_handle')
-                    fcn = varargin{2};
-                else
-                    prefix = varargin{2};
-                end
-                if isa(varargin{3}, 'function_handle')
-                    fcn = varargin{3};
-                else
-                    postfix = varargin{3};
-                end
-                separator = varargin{1};
-            elseif nargin == 5
-                prefix = varargin{2};
-                postfix = varargin{3};
-                fcn = varargin{4};
-                separator = varargin{1};
-            else
-                error('asdasd')
+            end
+            if args.limit >= 0 && count > args.limit
+                str = [str, args.truncated];
             end
             
-            str = obj.fold('', @(acc, e) [acc, fcn(e), separator]);
-            
-            
-            if numel(separator) && numel(str) >= numel(separator)
-                str = str(1:end-numel(separator));
-            end
-            
-            str = [prefix, str, postfix];
-            
+            str = [str, args.postfix];
         end
         
         function list = toList(obj)
@@ -1037,7 +1030,7 @@ classdef (Abstract) Collection < handle
         end
         
         function cellArray = toCellArray(obj)
-            % cellArray: cell-array = toCellArray() : Returns a cell-array with the dimension of 1xN, where N is the size of this collection, 
+            % cellArray: cell-array = toCellArray() : Returns a cell-array with the dimension of 1xN, where N is the size of this collection,
             % filled with all elements of this collection.
             
             cellArray = obj.toList().toCellArray();
