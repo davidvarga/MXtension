@@ -1,12 +1,9 @@
 classdef (Abstract) MutableSet < MXtension.Collections.Set & MXtension.Collections.MutableCollection
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    properties
-    end
-    
-    methods
-    end
-    
+
+    methods (Abstract)
+       % changed: logical = add(element: Any) - Adds the specified element to the set. Returns true if the set was changed, false otherwise.
+        modified = add(obj, element) 
+        
+    end   
 end
 

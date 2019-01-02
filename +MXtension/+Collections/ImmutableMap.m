@@ -1,39 +1,31 @@
 classdef ImmutableMap < MXtension.Collections.Map
-    
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
-    
     properties(Access = protected)
         InnerMap;
     end
     
-    %% Factories
     methods(Static)
         function map = fromMap(map)
-            % containers.Map, an instance of MXtension.Collections.Map or an instance of java.util.Map.
-            
             map = MXtension.Collections.ImmutableMap('map', map);
         end
         
         function map = ofEntries(varargin)
-            
-            
             map = MXtension.Collections.ImmutableMap('entries', varargin);
         end
-        
-        
     end
     
     methods(Access = protected)
         function obj = ImmutableMap(sourceType, source)
             if strcmp(sourceType, 'map')
-                
                 if isa(source, 'containers.Map')
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
-                    for i =1: numel(keys)
+                    keyType = '';
+                    for i = 1:numel(keys)
                         key = keys{i};
-%                         entry = MXtension.Collections.Entry(key, source(key));
+                        if isempty(keyType)
+                            keyType = class(key);
+                            obj.InnerMap = containers.Map('KeyType', keyType, 'ValueType', 'any');
+                        end
                         obj.InnerMap(key) = source(key);
                     end
                 elseif isa(source, 'MXtension.Collections.Map')
@@ -60,14 +52,12 @@ classdef ImmutableMap < MXtension.Collections.Map
                     elseif isa(entryOrPair, 'MXtension.Pair')
                         obj.InnerMap(entryOrPair.First) = entryOrPair.Second;
                     else
-                        % TODO: IllegalArgument
-                        error('IllegalArgument')
+                        throw(MException('MXtension:IllegalArgumentException', 'The passed source map type is not supported.'));
                     end
                     
                 end
             else
-                % TODO: IllegalArgument
-                error('IllegalArgument')
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             
             
@@ -75,22 +65,17 @@ classdef ImmutableMap < MXtension.Collections.Map
     end
     
     methods
-        
-        
         function retSize = size(obj)
             retSize = obj.InnerMap.Count;
         end
         
-        
         function set = keys(obj)
-            set = MXtension.setOf(obj.InnerMap.keys);
+            set = MXtension.setFrom(obj.InnerMap.keys);
         end
-        
         
         function list = values(obj)
-            list = MXtension.listOf(obj.InnerMap.values);
+            list = MXtension.listFrom(obj.InnerMap.values);
         end
-        
         
         function [value, present] = get(obj, key)
             present = false;
@@ -99,10 +84,7 @@ classdef ImmutableMap < MXtension.Collections.Map
                 present = true;
                 value = obj.InnerMap(key);
             end
-            
-            
         end
-        
         
         function entries = entries(obj)
             keys = obj.InnerMap.keys;
@@ -112,8 +94,6 @@ classdef ImmutableMap < MXtension.Collections.Map
             end
             entries = entries.toSet();
         end
-        
-        
     end
     
 end

@@ -1,7 +1,11 @@
 function map = mapFrom(map)
-%UNTITLED9 Summary of this function goes here
-%   Detailed explanation goes here
-
+% map: MXtension.Collections.Map = mapFrom(collection) : Returns a read-only map initialized with the given input map.
+%
+% Parameters:
+%   map - The input collection with the type of:
+%       - java.util.Map or
+%       - containers.Map or
+%       - MXtension.Collections.Map
 map = MXtension.Collections.ImmutableMap.fromMap(map);
 end
 

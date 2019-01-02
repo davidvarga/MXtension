@@ -1,5 +1,4 @@
 classdef ImmutableList < MXtension.Collections.List
-    % An untyped list implementation backed by a cell array.
     
     properties(Access = protected)
         CellArray;
@@ -18,16 +17,6 @@ classdef ImmutableList < MXtension.Collections.List
             % Returns a new List containing the elements in the input arguments keeping the argument order.
             
             list = MXtension.Collections.ImmutableList('elements', varargin);
-        end
-        
-        function list = ofSize(size, varargin)
-            % Returns a new List with the size of the input argument. All elements are null ([]) by default.
-            if nargin > 1
-                list = MXtension.Collections.ImmutableList('size', {size, varargin{1}});
-            else
-                list = MXtension.Collections.ImmutableList('size', size);
-            end
-            
         end
     end
     
@@ -72,43 +61,30 @@ classdef ImmutableList < MXtension.Collections.List
                         index = index + 1;
                     end
                 else
-                    % TODO: IllegalArgument (containerType)
+                    throw(MException('MXtension:IllegalArgumentException', 'The passed collection type is not supported.'));
                 end
             else
-                % TODO: IllegalArgument (commandType)
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
-            
-            
         end
-        
     end
     
-    %% List interface
     methods
-        
-        
         function item = get(obj, index)
-            % element: Any = list.get(index: double): Returns the element at the specified index in the list.
-            % TODO: throws IndexOutOfBoundsException
+            obj.verifySuppliedIndexToRetrieve(index);
             
             item = obj.CellArray{index};
         end
         
-        
         function size = size(obj)
-            % size: double = list.size(): Returns the number of elements in this list.
             size = numel(obj.CellArray);
         end
     end
     
-    %% Functional terminal operations
     methods
-        
-        
         function cellArray = toCellArray(obj)
             cellArray = obj.CellArray;
         end
-        
     end
     
     

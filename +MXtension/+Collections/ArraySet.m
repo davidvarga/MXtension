@@ -4,19 +4,14 @@ classdef ArraySet < MXtension.Collections.MutableSet
         BackingList;
     end
     
-    %% Factories
     methods(Static)
         function set = fromCollection(collection)
             set = MXtension.Collections.ArraySet('collection', collection);
         end
         
         function set = ofElements(varargin)
-            
-            
             set = MXtension.Collections.ArraySet('elements', varargin);
         end
-        
-        
     end
     
     methods(Access = protected)
@@ -27,7 +22,7 @@ classdef ArraySet < MXtension.Collections.MutableSet
             elseif strcmp(sourceType, 'collection')
                 obj.BackingList = MXtension.Collections.ArrayList.fromCollection(source);
             else
-                % TODO: IllegalArgument (commandType)
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             mutableIterator = obj.BackingList.listIterator(obj.BackingList.size()+1);
             index = obj.BackingList.size();
@@ -40,20 +35,12 @@ classdef ArraySet < MXtension.Collections.MutableSet
                 else
                     index = index - 1;
                 end
-                
             end
-            
         end
-        
     end
     
-    %% List interface
     methods
-        
         function changed = add(obj, element)
-            % changed: logical = add(element: Any): Adds the specified element to the collection.
-            % Return if the list was changed as the result of the operation.
-            % TODO: throws indexoutofbounds
             changed = false;
             if obj.BackingList.indexOf(element) < 0
                 changed = true;
@@ -61,40 +48,20 @@ classdef ArraySet < MXtension.Collections.MutableSet
             end
         end
         
-        
         function changed = addAll(obj, collection)
-            % wasAdded: logical = addAll(collection: <Collection type valid for fromCollection factory>): Adds all of the elements in the specified collection elements into the end of this list.
-            % Return if the list was changed as the result of the operation.
-            % TODO: throws indexoutofbounds
-            
             listToAdd = MXtension.Collections.ArrayList.fromCollection(collection);
             changed = false;
             for i = 1:listToAdd.size()
                 addChanged = obj.add(listToAdd.get(i));
                 changed = changed || addChanged;
             end
-            
-            
         end
-        
         
         function isRemoved = remove(obj, element)
-            % isRemoved: logical = list.remove(element: Any): Removes the first occurence of the specified element if found. Returns if a matching element was removed.
-            
-            index = obj.BackingList.indexOfFirst(@(it) isequal(it, element));
-            if index < 0
-                isRemoved = false;
-            else
-                obj.BackingList.removeAt(index);
-                isRemoved = true;
-            end
+            isRemoved = obj.BackingList.remove(element);
         end
         
-        % TODO: removeRange
-        
         function clear(obj)
-            % list.clear(): Removes all elements from this list.
-            
             obj.BackingList.clear();
         end
         
@@ -107,9 +74,6 @@ classdef ArraySet < MXtension.Collections.MutableSet
         function size = size(obj)
             size = obj.BackingList.size();
         end
-        
-        
-        
     end
     
     

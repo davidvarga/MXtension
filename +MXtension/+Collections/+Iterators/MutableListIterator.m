@@ -1,40 +1,22 @@
 classdef MutableListIterator < MXtension.Collections.Iterators.ListIterator & MXtension.Collections.Iterators.MutableIteratorOfList
     
     
-    properties(Access = private)
-        LastIndex = [];
-    end
-    
     methods
         function obj = MutableListIterator(list, varargin)
             obj@MXtension.Collections.Iterators.MutableIteratorOfList(list);
             obj@MXtension.Collections.Iterators.ListIterator(list, varargin{:});
-            
         end
         
         function add(obj, element)
+            % Adds the specified element element into the underlying collection immediately before the element that would be returned by next, if any,
+            %and after the element that would be returned by previous, if any.
+            % (If the collection contains no elements, the new element becomes the sole element in the collection.)
+            % The new element is inserted before the implicit cursor: a subsequent call to next would be unaffected, and a subsequent call to previous would return the new element.
+            %(This call increases by one the value that would be returned by a call to nextIndex or previousIndex.)
             
             obj.List.insert(obj.Index, element);
             obj.Index = obj.Index + 1;
-            
-        end
-        
-        function obj = remove(obj)
-            try
-                obj.List.removeAt(obj.LastIndex);
-                %    obj.Index = obj.Index - 1;
-            catch
-                % TODO: throw NoSuchElementException
-                error('IllegalState')
-            end
-        end
-        
-        % Override
-        function nextElement = next(obj)
-            obj.LastIndex = obj.Index;
-            nextElement = obj.next@MXtension.Collections.Iterators.ListIterator;
-            
-            
+            obj.LastIndex = [];
         end
         
         % Override
@@ -45,10 +27,16 @@ classdef MutableListIterator < MXtension.Collections.Iterators.ListIterator & MX
         
         
         function set(obj, element)
+            % Replaces the last element returned by next or previous with the specified element element.
+            
             if isempty(obj.LastIndex)
-                error('IllegalState')
+                throw(MException('MXtension:IllegalStateException', 'The last index of the iterator is empty.'));
             end
-            obj.List.set(obj.LastIndex, element);
+            try
+                obj.List.set(obj.LastIndex, element);
+            catch
+                throw(MException('MXtension:NoSuchElementException', ['The element on index ', num2str(obj.LastIndex), ' does not exist.']));
+            end
         end
     end
 end
