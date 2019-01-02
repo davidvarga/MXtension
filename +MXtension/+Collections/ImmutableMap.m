@@ -1,27 +1,16 @@
 classdef ImmutableMap < MXtension.Collections.Map
-    
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
-    
     properties(Access = protected)
         InnerMap;
     end
     
-    %% Factories
     methods(Static)
         function map = fromMap(map)
-            % containers.Map, an instance of MXtension.Collections.Map or an instance of java.util.Map.
-            
             map = MXtension.Collections.ImmutableMap('map', map);
         end
         
         function map = ofEntries(varargin)
-            
-            
             map = MXtension.Collections.ImmutableMap('entries', varargin);
         end
-        
-        
     end
     
     methods(Access = protected)
@@ -31,7 +20,7 @@ classdef ImmutableMap < MXtension.Collections.Map
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
                     keyType = '';
-                    for i =1: numel(keys)
+                    for i = 1:numel(keys)
                         key = keys{i};
                         if isempty(keyType)
                             keyType = class(key);
@@ -76,22 +65,17 @@ classdef ImmutableMap < MXtension.Collections.Map
     end
     
     methods
-        
-        
         function retSize = size(obj)
             retSize = obj.InnerMap.Count;
         end
-        
         
         function set = keys(obj)
             set = MXtension.setFrom(obj.InnerMap.keys);
         end
         
-        
         function list = values(obj)
             list = MXtension.listFrom(obj.InnerMap.values);
         end
-        
         
         function [value, present] = get(obj, key)
             present = false;
@@ -100,10 +84,7 @@ classdef ImmutableMap < MXtension.Collections.Map
                 present = true;
                 value = obj.InnerMap(key);
             end
-            
-            
         end
-        
         
         function entries = entries(obj)
             keys = obj.InnerMap.keys;
@@ -113,8 +94,6 @@ classdef ImmutableMap < MXtension.Collections.Map
             end
             entries = entries.toSet();
         end
-        
-        
     end
     
 end

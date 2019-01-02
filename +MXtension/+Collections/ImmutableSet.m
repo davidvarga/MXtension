@@ -1,6 +1,5 @@
 classdef ImmutableSet < MXtension.Collections.Set
-    %
-    
+
     properties(Access = protected)
         BackingList;
     end
@@ -18,8 +17,6 @@ classdef ImmutableSet < MXtension.Collections.Set
             
             set = MXtension.Collections.ImmutableSet('elements', varargin);
         end
-        
-        
     end
     
     methods(Access = protected)
@@ -29,7 +26,7 @@ classdef ImmutableSet < MXtension.Collections.Set
             elseif strcmp(sourceType, 'collection')
                 obj.BackingList = MXtension.Collections.ArrayList.fromCollection(source);
             else
-               throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
+                throw(MException('MXtension:IllegalArgumentException', 'The passed source type argument is invalid.'));
             end
             mutableIterator = obj.BackingList.listIterator(obj.BackingList.size()+1);
             index = obj.BackingList.size();
@@ -42,11 +39,8 @@ classdef ImmutableSet < MXtension.Collections.Set
                 else
                     index = index - 1;
                 end
-                
             end
         end
-        
-        
     end
     
     methods

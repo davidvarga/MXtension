@@ -10,18 +10,12 @@ classdef HashMap < MXtension.Collections.MutableMap
     %% Factories
     methods(Static)
         function map = fromMap(map)
-            % containers.Map, an instance of MXtension.Collections.Map or an instance of java.util.Map.
-            
             map = MXtension.Collections.HashMap('map', map);
         end
         
         function map = ofEntries(varargin)
-            
-            
             map = MXtension.Collections.HashMap('entries', varargin);
         end
-        
-        
     end
     
     methods(Access = protected)
@@ -32,14 +26,14 @@ classdef HashMap < MXtension.Collections.MutableMap
                 if isa(source, 'containers.Map')
                     keys = source.keys;
                     obj.InnerMap = containers.Map();
-                    for i =1: numel(keys)
+                    for i = 1:numel(keys)
                         key = keys{i};
-%                         entry = MXtension.Collections.Entry(key, source(key));
+                        %                         entry = MXtension.Collections.Entry(key, source(key));
                         obj.InnerMap(key) = source(key);
                     end
                 elseif isa(source, 'MXtension.Collections.Map')
                     obj = MXtension.Collections.MutableMap.fromMap(source.InnerMap);
-                  
+                    
                 elseif isa(source, 'java.util.Map')
                     obj.InnerMap = containers.Map();
                     iterator = source.keySet().iterator();
@@ -67,11 +61,8 @@ classdef HashMap < MXtension.Collections.MutableMap
                     
                 end
             else
-                % TODO: IllegalArgument
                 error('IllegalArgument')
             end
-            
-            
         end
     end
     
@@ -82,16 +73,13 @@ classdef HashMap < MXtension.Collections.MutableMap
             retSize = obj.InnerMap.Count;
         end
         
-        
         function set = keys(obj)
             set = MXtension.setOf(obj.InnerMap.keys);
         end
         
-        
         function list = values(obj)
             list = MXtension.listOf(obj.InnerMap.values);
         end
-        
         
         function [value, present] = get(obj, key)
             present = false;
@@ -104,7 +92,6 @@ classdef HashMap < MXtension.Collections.MutableMap
             
         end
         
-       
         function entries = entries(obj)
             keys = obj.InnerMap.keys;
             entries = MXtension.mutableSetOf();
@@ -113,8 +100,6 @@ classdef HashMap < MXtension.Collections.MutableMap
             end
             entries = entries.toSet();
         end
-        
-        
         
         
         function obj = clear(obj)
@@ -129,9 +114,6 @@ classdef HashMap < MXtension.Collections.MutableMap
             obj.put(key, value);
         end
         
-
-        
-
         
         function [value, present] = remove(obj, key)
             
@@ -141,8 +123,7 @@ classdef HashMap < MXtension.Collections.MutableMap
             end
         end
         
-      
-
+        
     end
     
 end

@@ -5,9 +5,5 @@ classdef TestDataClass
         Property1;
         Property2;
     end
-    
-    methods
-    end
-    
 end
 

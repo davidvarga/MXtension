@@ -1,5 +1,5 @@
 classdef ArrayList < MXtension.Collections.MutableList
-
+    
     properties(Access = protected)
         CellArray;
     end
@@ -69,7 +69,7 @@ classdef ArrayList < MXtension.Collections.MutableList
         end
         
     end
-
+    
     methods
         function item = get(obj, index)
             obj.verifySuppliedIndexToRetrieve(index);
@@ -152,7 +152,7 @@ classdef ArrayList < MXtension.Collections.MutableList
             cellArray = obj.CellArray;
         end
     end
-
+    
     methods
         function obj = reverse(obj)
             if (obj.isEmpty())
@@ -174,5 +174,5 @@ classdef ArrayList < MXtension.Collections.MutableList
         % TODO: sortWith, sortBy
         
     end
-
+    
 end

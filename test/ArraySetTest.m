@@ -1,6 +1,4 @@
-%% Test Class Definition
 classdef ArraySetTest < ImmutableSetTest & MutableCollectionTest & matlab.unittest.TestCase
-    
     methods
         function classUnderTest = classUnderTest(obj)
             classUnderTest = 'MXtension.Collections.ArraySet';
@@ -27,7 +25,5 @@ classdef ArraySetTest < ImmutableSetTest & MutableCollectionTest & matlab.unitte
             testCase.assertTrue(changed);
             testCase.assertElementsFromOneUntil(collection, 3);
         end
-        
     end
-    
 end

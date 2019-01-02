@@ -5,9 +5,5 @@ classdef TestHandleClass < handle
         PropertyA;
         PropertyB;
     end
-    
-    methods
-    end
-    
 end
 

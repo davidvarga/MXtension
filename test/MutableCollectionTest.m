@@ -7,11 +7,72 @@ classdef (Abstract) MutableCollectionTest < CollectionTest & matlab.unittest.Tes
             obj.assertTrue(isa(iterator, 'MXtension.Collections.Iterators.MutableIterator'));
         end
         
-
+        
     end
     
     methods(Test)
-       
+        
+        function mutableIterator_on_empty_collection(testCase)
+            collection = testCase.ofElements();
+            
+            try
+                collection.iterator().remove();
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalStateException');
+                testCase.assertEqual(ex.message, 'The last index of the iterator is empty.');
+            end
+            
+        end
+        
+        function mutableIterator_on_nonempty_collection(testCase)
+            collection = testCase.ofElements(1, 2, 3, 4);
+            it = collection.iterator();
+            try
+                it.remove();
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalStateException');
+                testCase.assertEqual(ex.message, 'The last index of the iterator is empty.');
+            end
+            testCase.assertEqual(it.next(), 1);
+            it.remove();
+            testCase.assertEqual(collection.size(), 3);
+            try
+                it.remove();
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalStateException');
+                testCase.assertEqual(ex.message, 'The last index of the iterator is empty.');
+            end
+            testCase.assertEqual(it.next(), 2);
+            testCase.assertEqual(it.next(), 3);
+            it.remove();
+            testCase.assertEqual(collection.size(), 2);
+            try
+                it.remove();
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalStateException');
+                testCase.assertEqual(ex.message, 'The last index of the iterator is empty.');
+            end
+            testCase.assertEqual(it.next(), 4);
+            it.remove();
+            testCase.assertEqual(collection.size(), 1);
+            testCase.assertFalse(it.hasNext());
+            it = collection.iterator();
+            testCase.assertEqual(it.next(), 2);
+            it.remove();
+            testCase.assertEqual(collection.size(), 0);
+            try
+                it.remove();
+                testCase.verifyFail();
+            catch ex
+                testCase.assertEqual(ex.identifier, 'MXtension:IllegalStateException');
+                testCase.assertEqual(ex.message, 'The last index of the iterator is empty.');
+            end
+        end
+        
         function add_element_to_empty_collection(testCase)
             assertCollection('test_entry');
             assertCollection(1);
@@ -40,7 +101,6 @@ classdef (Abstract) MutableCollectionTest < CollectionTest & matlab.unittest.Tes
         end
         
         function addAll_with_empty_parameter(testCase)
-            
             collection = testCase.ofElements();
             changed = collection.addAll(testCase.ofElements());
             testCase.assertFalse(changed);
@@ -331,6 +391,6 @@ classdef (Abstract) MutableCollectionTest < CollectionTest & matlab.unittest.Tes
             testCase.assertTrue(changed);
             testCase.assertElementsFromOneUntilWithOffset(collection, 2, 2);
         end
-
+        
     end
 end

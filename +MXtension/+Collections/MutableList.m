@@ -22,7 +22,6 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
         % removedElement: Any = list.removeAt(index: double): Removes an element at the specified index from the list and returns the removed
         % element.
         % Throws MXtension:IndexOutOfBoundsException if the specified index is out ouf the list's boundaries.
-        
         removedElement = removeAt(obj, index);
         
         mutableListIterator = listIterator(obj, varargin);
@@ -38,6 +37,6 @@ classdef (Abstract) MutableList < MXtension.Collections.MutableCollection & MXte
             % list.fill(value: Any) :Each element in the list gets replaced with the specified value.
             
             obj.forEachIndexed(@(ind, it) obj.set(ind, value));
-        end 
+        end
     end
 end

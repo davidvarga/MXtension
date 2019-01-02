@@ -7,7 +7,6 @@ classdef IndexedIterator < MXtension.Collections.Iterators.Iterator
     
     methods
         function obj = IndexedIterator(iterator)
-            % TODO: throw error if class is worng
             obj.Iterator = iterator;
         end
         

@@ -21,7 +21,6 @@ classdef MutableMap < MXtension.Collections.Map
             while iterator.hasNext()
                 cEntry = iterator.next();
                 obj.put(cEntry.Key, cEntry.Value);
-                
             end
         end
         
@@ -41,13 +40,10 @@ classdef MutableMap < MXtension.Collections.Map
                 entry = varargin{1};
                 key = entry.Key;
                 value = entry.Value;
-                
             elseif nargin == 3
                 % key + value
                 key = varargin{1};
                 value = varargin{2};
-                
-                
             else
                 % TODO: Error!
                 error('IllegalArgument')
@@ -60,13 +56,9 @@ classdef MutableMap < MXtension.Collections.Map
                     
                     boolean = true;
                     obj.remove(key);
-      
+                    
                 end
             end
-            
         end
-        
-        
     end
-    
 end

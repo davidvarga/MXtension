@@ -15,7 +15,7 @@ classdef (Abstract) MutableCollection < MXtension.Collections.Collection
         isRemoved = remove(obj, element);
         
         % clear() : Removes all elements from this collection.
-        clear(obj); 
+        clear(obj);
         
     end
     

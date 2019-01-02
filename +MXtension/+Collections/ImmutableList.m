@@ -68,7 +68,7 @@ classdef ImmutableList < MXtension.Collections.List
             end
         end
     end
-
+    
     methods
         function item = get(obj, index)
             obj.verifySuppliedIndexToRetrieve(index);
